@@ -2,8 +2,11 @@ import MakrdownIt from 'markdown-it'
 // @ts-expect-error
 import MarkdownItTOC from 'markdown-it-table-of-contents'
 import markdownItAnchor from 'markdown-it-anchor'
-import { getHighlighter } from 'shiki'
+import { getHighlighter, Lang } from 'shiki'
 import slugify from 'slugify'
+import chalk from 'chalk'
+
+export const pkgName = 'unplugin-markdown-2-html'
 
 export async function createMarkdownRender() {
   const highlight = await createCodeHighlighter()
@@ -24,9 +27,17 @@ export async function createMarkdownRender() {
 export async function createCodeHighlighter() {
   const shikiHighlighter = await getHighlighter({
     // todo: extend options
-    themes: ['vitesse-light', 'vitesse-dark'],
+    // todo: dark & light mode
+    themes: ['css-variables', 'vitesse-light', 'vitesse-dark'],
     langs: ['javascript', 'typescript']
   })
-  const highlighter = (code: string, lang: string) => shikiHighlighter.codeToHtml(code, { lang })
+  const highlighter = (code: string, lang: string) => {
+    const isSupportedLang = shikiHighlighter.getLoadedLanguages().includes(lang as Lang)
+    if(!isSupportedLang) {
+      console.warn(chalk.yellow(`[${pkgName}]:`),`Unsupported language '${lang}', skipping highlight.`)
+      return code
+    }
+    return shikiHighlighter.codeToHtml(code, { lang, theme: 'css-variables' })
+  }
   return highlighter
 }
