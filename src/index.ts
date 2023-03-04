@@ -1,12 +1,18 @@
 import { createUnplugin } from 'unplugin'
+import { createMarkdownRender } from './helper'
 import type { Options } from './types'
 
+let markdownRender
 export default createUnplugin<Options | undefined>(options => ({
-  name: 'unplugin-starter',
+  name: 'unplugin-markdown-2-html',
+  enforce: 'pre',
   transformInclude(id) {
-    return id.endsWith('main.ts')
+    console.log('id', id)
+    return /\.(md|markdown)$/i.test(id) 
   },
-  transform(code) {
-    return code.replace('__UNPLUGIN__', `Hello Unplugin! ${options}`)
+  async transform(markdown) {
+    markdownRender ||= await createMarkdownRender()
+    const html = markdownRender(markdown)
+    return `export const html = ${JSON.stringify(html)}`
   },
 }))
