@@ -1,28 +1,19 @@
-# unplugin-starter
+<h2 align="center">
+  unplugin-markdown-2-html
+</h1>
 
-[![NPM version](https://img.shields.io/npm/v/unplugin-starter?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-starter)
+<h2 align="center">
+ ✨ A compiler plugin to transform markdown into html content.
+</h2>
 
-Starter template for [unplugin](https://github.com/unjs/unplugin).
+[![NPM version](https://img.shields.io/npm/v/unplugin-markdown-2-html?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-markdown-2-html)
 
-## Template Usage
-
-To use this template, clone it down using:
-
-```bash
-npx degit antfu/unplugin-starter my-unplugin
-```
-
-And do a global replace of `unplugin-starter` with your plugin name.
-
-Then you can start developing your unplugin 🔥
-
-To test your plugin, run: `pnpm run dev`
-To release a new version, run: `pnpm run release`
+> ⚠️ WIP
 
 ## Install
 
 ```bash
-npm i unplugin-starter
+npm i unplugin-markdown-2-html
 ```
 
 <details>
@@ -30,11 +21,11 @@ npm i unplugin-starter
 
 ```ts
 // vite.config.ts
-import Starter from 'unplugin-starter/vite'
+import UnpluginMarkdown2Html from 'unplugin-markdown-2-html/vite'
 
 export default defineConfig({
   plugins: [
-    Starter({ /* options */ }),
+    UnpluginMarkdown2Html({ /* options */ }),
   ],
 })
 ```
@@ -48,11 +39,11 @@ Example: [`playground/`](./playground/)
 
 ```ts
 // rollup.config.js
-import Starter from 'unplugin-starter/rollup'
+import UnpluginMarkdown2Html from 'unplugin-markdown-2-html/rollup'
 
 export default {
   plugins: [
-    Starter({ /* options */ }),
+    UnpluginMarkdown2Html({ /* options */ }),
   ],
 }
 ```
@@ -68,7 +59,7 @@ export default {
 module.exports = {
   /* ... */
   plugins: [
-    require('unplugin-starter/webpack')({ /* options */ })
+    require('unplugin-markdown-2-html/webpack')({ /* options */ })
   ]
 }
 ```
@@ -82,7 +73,7 @@ module.exports = {
 // nuxt.config.js
 export default {
   buildModules: [
-    ['unplugin-starter/nuxt', { /* options */ }],
+    ['unplugin-markdown-2-html/nuxt', { /* options */ }],
   ],
 }
 ```
@@ -99,7 +90,7 @@ export default {
 module.exports = {
   configureWebpack: {
     plugins: [
-      require('unplugin-starter/webpack')({ /* options */ }),
+      require('unplugin-markdown-2-html/webpack')({ /* options */ }),
     ],
   },
 }
@@ -113,10 +104,10 @@ module.exports = {
 ```ts
 // esbuild.config.js
 import { build } from 'esbuild'
-import Starter from 'unplugin-starter/esbuild'
+import UnpluginMarkdown2Html from 'unplugin-markdown-2-html/esbuild'
 
 build({
-  plugins: [Starter()],
+  plugins: [UnpluginMarkdown2Html()],
 })
 ```
 

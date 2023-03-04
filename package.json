@@ -1,24 +1,25 @@
 {
-  "name": "unplugin-starter",
+  "name": "unplugin-markdown-2-html",
   "type": "module",
   "version": "0.1.0",
   "packageManager": "pnpm@7.1.1",
-  "description": "Register global imports on demand for Vite and Webpack",
+  "description": "A compiler plugin to transform markdown into html.",
   "license": "MIT",
-  "homepage": "https://github.com/antfu/unplugin-starter#readme",
+  "homepage": "https://github.com/kricsleo/unplugin-markdown-2-html#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/antfu/unplugin-starter.git"
+    "url": "git+https://github.com/kricsleo/unplugin-markdown-2-html.git"
   },
   "bugs": {
-    "url": "https://github.com/antfu/unplugin-starter/issues"
+    "url": "https://github.com/kricsleo/unplugin-markdown-2-html/issues"
   },
   "keywords": [
     "unplugin",
     "vite",
     "webpack",
     "rollup",
-    "transform"
+    "transform",
+    "markdown"
   ],
   "exports": {
     ".": {
