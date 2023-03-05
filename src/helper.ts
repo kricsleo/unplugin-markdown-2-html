@@ -10,8 +10,8 @@ import { Options } from './types'
 export const pkgName = 'unplugin-markdown-2-html'
 
 let markdownRender
-export async function transformMarkdown(markdown: string) {
-  markdownRender ||= await createMarkdownRender()
+export async function transformMarkdown(markdown: string, options?: Options) {
+  markdownRender ||= await createMarkdownRender(options)
   const html = markdownRender(markdown)
   const content = 
 `export const markdown = ${JSON.stringify(markdown)}
@@ -30,7 +30,6 @@ export async function createMarkdownRender(options?: Options) {
   })
   .use(markdownItAnchor, { slugify })
   .use(MarkdownItTOC, { 
-    includeLevel: [1, 2, 3],
     containerClass: 'toc',
     markerPattern: /^\[toc\]/im,
     ...options?.toc

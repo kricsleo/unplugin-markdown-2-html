@@ -9,6 +9,6 @@ export default createUnplugin<Options | undefined>(options => ({
     return /\.(md|markdown)$/i.test(id) 
   },
   async transform(markdown: string) {
-    return await transformMarkdown(markdown)
+    return await transformMarkdown(markdown, options)
   }
 }))
