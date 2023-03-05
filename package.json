@@ -1,9 +1,9 @@
 {
   "name": "unplugin-markdown-2-html",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packageManager": "pnpm@7.1.1",
-  "description": "A compiler plugin to transform markdown into html.",
+  "description": "Transform markdown into html at build time.",
   "license": "MIT",
   "homepage": "https://github.com/kricsleo/unplugin-markdown-2-html#readme",
   "repository": {
