@@ -13,6 +13,7 @@ export async function transformMarkdown(markdown: string, options?: Options) {
   markdownRender ||= await createMarkdownRender(options)
   const html = markdownRender(markdown)
   const content = 
+  // todo: support export toc alone
 `
 export const markdown = ${JSON.stringify(markdown)}
 export const html = ${JSON.stringify(html)}
