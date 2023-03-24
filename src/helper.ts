@@ -1,7 +1,7 @@
 import MakrdownIt from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
 import markdownItAttrs from 'markdown-it-attrs'
-import markdownItToc from 'markdown-it-toc-done-right'
+import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import { getHighlighter, Lang, BUNDLED_LANGUAGES, Theme } from 'shiki'
 import chalk from 'chalk'
 import { Options } from './types'
@@ -32,10 +32,13 @@ export async function createMarkdownRender(options?: Options) {
   })
   .use(markdownItAttrs)
   .use(markdownItToc, {
+    listType: 'ul',
     callback: tocStr => toc = tocStr
-  })
+  } as Partial<TocOptions>)
   .use(markdownItAnchor, {
-    permalink: markdownItAnchor.permalink.ariaHidden({
+    // if support headings from html,
+    // https://github.com/valeriangalliat/markdown-it-anchor#parsing-headings-from-html-blocks
+    permalink: markdownItAnchor.permalink.linkInsideHeader({
       placement: 'before'
     })
   })
