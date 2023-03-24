@@ -14,6 +14,7 @@ export async function transformMarkdown(markdown: string, options?: Options) {
   markdownRender ||= await createMarkdownRender(options)
   const { html, toc } = markdownRender(markdown)
   const content = 
+  // todo: extract meta info
 `
 export const markdown = ${JSON.stringify(markdown)}
 export const html = ${JSON.stringify(html)}
