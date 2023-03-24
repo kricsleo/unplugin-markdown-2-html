@@ -6,9 +6,11 @@
 
 ## 二级标题 二级标题
 
-## [bing](https://bing.com)
+## [bing](https://bing.com){target=_blank}
 
 ## I ♥ Cats
+
+## ♥
 
 ## fooBar 123 $#%
 

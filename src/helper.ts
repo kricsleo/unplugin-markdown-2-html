@@ -1,40 +1,48 @@
 import MakrdownIt from 'markdown-it'
-// @ts-expect-error
-import MarkdownItTOC from 'markdown-it-table-of-contents'
 import markdownItAnchor from 'markdown-it-anchor'
+import markdownItAttrs from 'markdown-it-attrs'
+import markdownItToc from 'markdown-it-toc-done-right'
 import { getHighlighter, Lang, BUNDLED_LANGUAGES, Theme } from 'shiki'
 import chalk from 'chalk'
 import { Options } from './types'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
-let markdownRender
+type MarkdownRender = (markdown: string) => { html: string; toc: string; }
+let markdownRender: MarkdownRender
 export async function transformMarkdown(markdown: string, options?: Options) {
   markdownRender ||= await createMarkdownRender(options)
-  const html = markdownRender(markdown)
+  const { html, toc } = markdownRender(markdown)
   const content = 
-  // todo: support export toc alone
 `
 export const markdown = ${JSON.stringify(markdown)}
 export const html = ${JSON.stringify(html)}
+export const toc = ${JSON.stringify(toc)}
 `.trim()
   return content
 }
 
 export async function createMarkdownRender(options?: Options) {
   const highlight = await createCodeHighlighter(options?.highlightTheme)
+  let toc: string
   const markdownIt = new MakrdownIt({ 
     html: true,
     highlight,
     ...options?.markdown
   })
-  .use(markdownItAnchor)
-  .use(MarkdownItTOC, { 
-    containerClass: 'toc',
-    markerPattern: /^\[toc\]/im,
-    ...options?.toc
+  .use(markdownItAttrs)
+  .use(markdownItToc, {
+    callback: tocStr => toc = tocStr
   })
-  const markdownRender = (markdown: string) => markdownIt.render(markdown)
+  .use(markdownItAnchor, {
+    permalink: markdownItAnchor.permalink.ariaHidden({
+      placement: 'before'
+    })
+  })
+  const markdownRender = (markdown: string) => ({
+    html: markdownIt.render(markdown),
+    toc
+  })
   return markdownRender
 }
 

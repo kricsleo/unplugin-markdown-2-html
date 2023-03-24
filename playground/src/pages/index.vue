@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { html } from './index.md'
+import { html, toc } from './index.md'
 </script>
 
 <template>
   <main>
+    <pre overflow-auto border-2 rounded p-10>
+      {{ toc }}
+    </pre>
     <pre overflow-auto border-2 rounded p-10>
       {{ html }}
     </pre>
