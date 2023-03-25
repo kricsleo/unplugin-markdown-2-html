@@ -16,6 +16,7 @@ importers:
       markdown-it: ^13.0.1
       markdown-it-anchor: ^8.6.7
       markdown-it-attrs: ^4.1.6
+      markdown-it-meta-yaml: ^0.0.4
       markdown-it-toc-done-right: ^4.2.0
       nodemon: ^2.0.20
       rimraf: ^3.0.2
@@ -32,6 +33,7 @@ importers:
       markdown-it: 13.0.1
       markdown-it-anchor: 8.6.7_ea7kj7wzjkld5jo2noyjqxi764
       markdown-it-attrs: 4.1.6_markdown-it@13.0.1
+      markdown-it-meta-yaml: 0.0.4
       markdown-it-toc-done-right: 4.2.0
       shiki: 0.14.1
       unplugin: 1.1.0
@@ -4075,7 +4077,6 @@ packages:
     hasBin: true
     dependencies:
       argparse: 2.0.1
-    dev: true
 
   /jsdom/21.1.1:
     resolution: {integrity: sha512-Jjgdmw48RKcdAIQyUD1UdBh2ecH7VqwaXPN3ehoZN6MqgVbMn+lRm1aAT1AsdJRAJpwfa4IpwgzySn61h2qu3w==}
@@ -4404,6 +4405,12 @@ packages:
       markdown-it: '>= 9.0.0'
     dependencies:
       markdown-it: 13.0.1
+    dev: false
+
+  /markdown-it-meta-yaml/0.0.4:
+    resolution: {integrity: sha512-faAygAufqa5EnrauKVs4tnF/tXIKQVHNZ3HRLVTJa33TrD0JIPDsjrJhMoGlzTALZWuP5bsjkX69mSxTQSyzuw==}
+    dependencies:
+      js-yaml: 4.1.0
     dev: false
 
   /markdown-it-toc-done-right/4.2.0:

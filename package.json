@@ -89,6 +89,7 @@
     "markdown-it": "^13.0.1",
     "markdown-it-anchor": "^8.6.7",
     "markdown-it-attrs": "^4.1.6",
+    "markdown-it-meta-yaml": "^0.0.4",
     "markdown-it-toc-done-right": "^4.2.0",
     "shiki": "^0.14.1",
     "unplugin": "^1.0.1"

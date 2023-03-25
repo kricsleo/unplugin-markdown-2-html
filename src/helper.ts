@@ -2,23 +2,23 @@ import MakrdownIt from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
 import markdownItAttrs from 'markdown-it-attrs'
 import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
+import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
 import { getHighlighter, Lang, BUNDLED_LANGUAGES, Theme } from 'shiki'
 import chalk from 'chalk'
 import { Options } from './types'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
-type MarkdownRender = (markdown: string) => { html: string; toc: string; }
-let markdownRender: MarkdownRender
+let markdownRender: Awaited<ReturnType<typeof createMarkdownRender>>
 export async function transformMarkdown(markdown: string, options?: Options) {
   markdownRender ||= await createMarkdownRender(options)
-  const { html, toc } = markdownRender(markdown)
+  const { html, toc, meta } = markdownRender(markdown)
   const content = 
-  // todo: extract meta info
 `
 export const markdown = ${JSON.stringify(markdown)}
 export const html = ${JSON.stringify(html)}
 export const toc = ${JSON.stringify(toc)}
+export const meta = ${JSON.stringify(meta)}
 `.trim()
   return content
 }
@@ -26,6 +26,7 @@ export const toc = ${JSON.stringify(toc)}
 export async function createMarkdownRender(options?: Options) {
   const highlight = await createCodeHighlighter(options?.highlightTheme)
   let toc: string
+  let meta: Record<string, unknown>
   const markdownIt = new MakrdownIt({ 
     html: true,
     highlight,
@@ -43,9 +44,13 @@ export async function createMarkdownRender(options?: Options) {
       placement: 'before'
     })
   })
+  .use(markdownItMetaYaml, {
+    cb: metaJSON => meta = metaJSON
+  } as MarkdownItMetaYamlOptions)
   const markdownRender = (markdown: string) => ({
     html: markdownIt.render(markdown),
-    toc
+    toc,
+    meta
   })
   return markdownRender
 }

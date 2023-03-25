@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { html, toc } from './index.md'
-// import '@kricsleo/markdown-themes/dist/prose.css'
-import '/Users/shengfeng.xu/Documents/workspace/markdown-themes/prose.css'
+import * as md from './index.md'
+import '@kricsleo/markdown-themes/dist/prose.css'
 </script>
 
 <template>
   <main class="prose px-50">
-    <div v-html="html" />
+    <pre>
+      {{ md.meta }}
+    </pre>
+    <div v-html="md.html" />
   </main>
 </template>
