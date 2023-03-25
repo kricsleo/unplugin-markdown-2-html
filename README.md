@@ -3,7 +3,7 @@
 </h1>
 
 <h2 align="center">
- ✨ Transform markdown into html at build time. content.
+ ✨ Transform markdown into html at build time content.
 </h2>
 
 [![NPM version](https://img.shields.io/npm/v/unplugin-markdown-2-html?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-markdown-2-html)
