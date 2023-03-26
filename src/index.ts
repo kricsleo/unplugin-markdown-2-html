@@ -2,6 +2,8 @@ import { createUnplugin } from 'unplugin'
 import { createMarkdownTransformer, pkgName } from './helper'
 import type { Options } from './types'
 
+export * from './helper'
+
 export default createUnplugin<Options | undefined>(options => {
   const markdownTransformer = createMarkdownTransformer(options)
   return {
