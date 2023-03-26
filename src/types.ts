@@ -12,6 +12,7 @@ export interface Options {
   toc?: TocOptions
   /** @see https://github.com/valeriangalliat/markdown-it-anchor#usage */
   anchor?: anchor.AnchorOptions
+  /** Highligher, support highlightjs and shiki */
   highlighter: Highlighter
   /** @see https://github.com/shikijs/shiki/blob/main/docs/themes.md */
   highlightTheme?: Theme
