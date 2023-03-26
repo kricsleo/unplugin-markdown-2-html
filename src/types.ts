@@ -1,4 +1,4 @@
-import MarkdownIt, { Options as MarkdownItOptions } from 'markdown-it'
+import { Options as MarkdownItOptions } from 'markdown-it'
 import anchor from 'markdown-it-anchor'
 import { TocOptions } from 'markdown-it-toc-done-right'
 import { Theme } from 'shiki'
