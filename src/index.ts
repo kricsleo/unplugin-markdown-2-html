@@ -1,14 +1,17 @@
 import { createUnplugin } from 'unplugin'
-import { pkgName, transformMarkdown } from './helper'
+import { createMarkdownTransformer, pkgName } from './helper'
 import type { Options } from './types'
 
-export default createUnplugin<Options | undefined>(options => ({
-  name: pkgName,
-  enforce: 'pre',
-  transformInclude(id: string) {
-    return /\.(md|markdown)$/i.test(id) 
-  },
-  async transform(markdown: string) {
-    return await transformMarkdown(markdown, options)
+export default createUnplugin<Options | undefined>(options => {
+  const markdownTransformer = createMarkdownTransformer(options)
+  return {
+    name: pkgName,
+    enforce: 'pre',
+    transformInclude(id: string) {
+      return /\.(md|markdown)$/i.test(id) 
+    },
+    transform(markdown: string) {
+      return markdownTransformer(markdown)
+    }
   }
-}))
+})
