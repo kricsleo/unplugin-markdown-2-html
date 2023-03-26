@@ -7,6 +7,7 @@ import { getHighlighter, Lang, BUNDLED_LANGUAGES, Theme } from 'shiki'
 import chalk from 'chalk'
 import hljs from 'highlight.js'
 import { Options } from './types'
+import anchor from 'markdown-it-anchor'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
@@ -39,15 +40,17 @@ export async function createMarkdownRender(options?: Options) {
   .use(markdownItAttrs)
   .use(markdownItToc, {
     listType: 'ul',
-    callback: tocStr => toc = tocStr
+    callback: tocStr => toc = tocStr,
+    ...options?.toc
   } as Partial<TocOptions>)
   .use(markdownItAnchor, {
     // if support headings from html,
     // https://github.com/valeriangalliat/markdown-it-anchor#parsing-headings-from-html-blocks
     permalink: markdownItAnchor.permalink.linkInsideHeader({
       placement: 'before'
-    })
-  })
+    }),
+    ...options?.anchor
+  } as anchor.AnchorOptions)
   .use(markdownItMetaYaml, {
     cb: metaJSON => meta = metaJSON
   } as MarkdownItMetaYamlOptions)
