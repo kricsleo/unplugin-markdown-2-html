@@ -5,6 +5,7 @@ import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
 import { getHighlighter, Lang, BUNDLED_LANGUAGES, Theme } from 'shiki'
 import chalk from 'chalk'
+import hljs from 'highlight.js'
 import { Options } from './types'
 
 export const pkgName = 'unplugin-markdown-2-html'
@@ -24,7 +25,10 @@ export const meta = ${JSON.stringify(meta)}
 }
 
 export async function createMarkdownRender(options?: Options) {
-  const highlight = await createCodeHighlighter(options?.highlightTheme)
+  /** todo: also support highlightjs */
+  const highlight = options?.highlighter === 'shiki'
+    ? await createCodeHighlighter(options?.highlightTheme)
+    : createHljsHighlighter()
   let toc: string
   let meta: Record<string, unknown>
   const markdownIt = new MakrdownIt({ 
@@ -53,6 +57,17 @@ export async function createMarkdownRender(options?: Options) {
     meta
   })
   return markdownRender
+}
+
+export function createHljsHighlighter() {
+  return (code: string, lang: string) => {
+    if(!hljs.getLanguage(lang)) {
+      console.warn(chalk.bgYellow(`[${pkgName}]:`),`No language registration for '${lang}', skipping highlight.`)
+      return code
+    }
+    const result = hljs.highlight(code, { language: lang })
+    return result.value
+  }
 }
 
 /** comment */

@@ -4,7 +4,7 @@
     "dev": "nodemon -w '../src/**/*.ts' -e .ts -x vite"
   },
   "dependencies": {
-    "@kricsleo/markdown-themes": "^1.0.0",
+    "@kricsleo/markdown-themes": "^1.0.2",
     "@vueuse/core": "^9.13.0",
     "vue": "^3.2.47",
     "vue-router": "^4.1.6"
