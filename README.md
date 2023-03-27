@@ -10,9 +10,9 @@
 
 ## Features
 
-- Support Vite, Rollup, Webpack, esbuild, and more - powered by [`unplugin`](https://github.com/unjs/unplugin)
-- 0-runtime, transform markdown at build time - powered by [markdown-it](https://github.com/markdown-it/markdown-it)
-- Provide rich and customizable metadata of markdown files
+- 🎨 Support Vite, Rollup, Webpack, esbuild, and more - powered by [`unplugin`](https://github.com/unjs/unplugin)
+- 🚀 0-runtime, transform markdown at build time - powered by [markdown-it](https://github.com/markdown-it/markdown-it)
+- 🎃 Rich and customizable built-in rules of transforming markdown files
   - Built-in code highlight - powered by [`highlight.js`](https://github.com/highlightjs/highlight.js/)
   - Built-in support for table-of-contents
   - Built-in support for YAML front matter
@@ -144,7 +144,7 @@ export interface Person {
 Paragraph goes here.
 </pre>
 
-✨ Directly import the markdown file
+✨ Directly import from the markdown file
 ```ts
 import { html, toc, meta, markdown } from 'hello.md'
 
@@ -189,7 +189,7 @@ console.log(html, toc, meta, markdown)
 
 ### Typescript Support
 
-Want ts-hint when importing markdown files? Just add `unplugin-markdown-2-html/markdown` to `tsconfig.json`
+💪🏻 Want ts-hint when importing markdown files? Just add `unplugin-markdown-2-html/markdown` to `tsconfig.json`
 
 ```json
 {
