@@ -10,8 +10,9 @@
 
 ## Features
 
-- 🎨 Support Vite, Rollup, Webpack, esbuild, and more - powered by [`unplugin`](https://github.com/unjs/unplugin)
-- 🚀 0-runtime, transform markdown at build time - powered by [markdown-it](https://github.com/markdown-it/markdown-it)
+- 🪜 Support Vite, Rollup, Webpack, esbuild, and more - powered by [`unplugin`](https://github.com/unjs/unplugin)
+- 🚀 0-runtime when used as a plugin, transform markdown at build time - powered by [markdown-it](https://github.com/markdown-it/markdown-it)
+- 🍺 Support compile markdown content at runtime when used as a runtime for browser and nodejs
 - 🎃 Rich and customizable built-in rules of transforming markdown files
   - Built-in code highlight - powered by [`highlight.js`](https://github.com/highlightjs/highlight.js/)
   - Built-in support for table-of-contents
@@ -124,6 +125,8 @@ build({
 
 ## Usage
 
+### Use It as a Plugin
+
 `hello.md` for example
 <pre>
 ---
@@ -183,8 +186,19 @@ console.log(html, toc, meta, markdown)
 // ```
 // 
 // # h2
-
+// 
 // Paragraph goes here.
+```
+
+### Use It as Runtime
+
+```ts
+import { createMarkdownRender } from 'unplugin-markdown-2-html'
+
+// or `createMarkdownRender(options: Options)`
+const render = createMarkdownRender()
+const { html, toc, meta, markdown } = render(`# Markdown content`)
+console.log(html, toc, meta, markdown)
 ```
 
 ### Options
