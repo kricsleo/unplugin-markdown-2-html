@@ -2,8 +2,6 @@ import { Options as MarkdownItOptions } from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
 import { TocOptions } from 'markdown-it-toc-done-right'
 
-export type Highlighter = 'highlightjs' | 'shiki'
-
 export interface Options {
   /** @see https://github.com/markdown-it/markdown-it#init-with-presets-and-options */
   markdown?: MarkdownItOptions

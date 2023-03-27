@@ -187,6 +187,14 @@ console.log(html, toc, meta, markdown)
 // Paragraph goes here.
 ```
 
+### Options
+
+| Prop     | Type   | Required | Default | Description                                                                                                                       |
+|----------|--------|----------|---------|-----------------------------------------------------------------------------------------------------------------------------------|
+| markdown | object | ❎        | -       | How markdown content is parsed. See [MarkdownItOptions](https://github.com/markdown-it/markdown-it#init-with-presets-and-options) |
+| toc      | object | ❎        | -       | How table-of-contents is parsed. See [TocOptions](https://github.com/nagaozen/markdown-it-toc-done-right#options)                 |
+| anchor   | object | ❎        | -       | How anchors of heading is parsed. See [AnchorOptions](https://github.com/valeriangalliat/markdown-it-anchor#usage)                |
+
 ### Typescript Support
 
 💪🏻 Want ts-hint when importing markdown files? Just add `unplugin-markdown-2-html/markdown` to `tsconfig.json`
