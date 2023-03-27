@@ -1,14 +1,22 @@
-<h2 align="center">
+<h1 align="center">
   unplugin-markdown-2-html
 </h1>
 
 <h2 align="center">
- ✨ Transform markdown into html at build time content.
+ ✨ Transform markdown into html at build time.
 </h2>
 
 [![NPM version](https://img.shields.io/npm/v/unplugin-markdown-2-html?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-markdown-2-html)
 
-> ⚠️ WIP
+## Features
+
+- Support Vite, Rollup, Webpack, esbuild, and more - powered by [`unplugin`](https://github.com/unjs/unplugin)
+- 0-runtime, transform markdown at build time - powered by [markdown-it](https://github.com/markdown-it/markdown-it)
+- Provide rich and customizable metadata of markdown files
+  - Built-in code highlight - powered by [`highlight.js`](https://github.com/highlightjs/highlight.js/)
+  - Built-in support for table-of-contents
+  - Built-in support for YAML front matter
+  - Built-in support for anchors of heading
 
 ## Install
 
@@ -112,3 +120,85 @@ build({
 ```
 
 <br></details>
+
+
+## Usage
+
+`hello.md` for example
+<pre>
+---
+title: Hello Makrdown
+likes: 100
+---
+
+# h1 
+
+```ts
+export interface Person {
+  name: string
+}
+```
+
+# h2
+
+Paragraph goes here.
+</pre>
+
+✨ Directly import the markdown file
+```ts
+import { html, toc, meta, markdown } from 'hello.md'
+
+console.log(html, toc, meta, markdown)
+
+// html content 👇
+// <h1 id="h1" tabindex="-1"><a class="header-anchor" href="#h1">#</a> h1</h1>
+// <pre><code class="language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">Person</span> {
+//   <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>
+// }
+// </code></pre>
+// <h1 id="h2" tabindex="-1"><a class="header-anchor" href="#h2">#</a> h2</h1>
+// <p>Paragraph goes here.</p>
+
+// toc contet 👇
+// <nav class="table-of-contents"><ul><li><a href="#h1">h1</a></li><li><a href="#h2">h2</a></li></ul></nav>
+
+// meta content 👇
+// {
+//  "title": "Hello Makrdown",
+//  "likes": 100
+// }
+
+// markdown content 👇
+// ---
+// title: Hello Makrdown
+// likes: 100
+// ---
+// 
+// # h1 
+// 
+// ```ts
+// export interface Person {
+//   name: string
+// }
+// ```
+// 
+// # h2
+
+// Paragraph goes here.
+```
+
+### Typescript Support
+
+Want ts-hint when importing markdown files? Just add `unplugin-markdown-2-html/markdown` to `tsconfig.json`
+
+```json
+{
+ "compilerOptions": {
+    "types": [ "unplugin-markdown-2-html/markdown" ],
+  },
+}
+```
+
+## License
+
+[MIT](./LICENSE) License © 2023 [Kricsleo](https://github.com/kricsleo)
