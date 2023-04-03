@@ -5,7 +5,7 @@ import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
 import hljs from 'highlight.js'
 import chalk from 'chalk'
-import { Options } from './types'
+import { Markdown, Options } from './types'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
@@ -24,7 +24,7 @@ export const meta = ${JSON.stringify(meta)}
   }
 }
 
-export function createMarkdownRender(options?: Options) {
+export function createMarkdownRender(options?: Options): (markdown: string) => Markdown {
   const highlight = createHljsHighlighter()
   let toc: string
   let meta: Record<string, unknown>

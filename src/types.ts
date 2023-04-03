@@ -10,3 +10,11 @@ export interface Options {
   /** @see https://github.com/valeriangalliat/markdown-it-anchor#usage */
   anchor?: markdownItAnchor.AnchorOptions
 }
+
+/** transformed results */
+export interface Markdown {
+  markdown: string
+  html: string
+  toc: string
+  meta: Record<string, unknown>
+}
