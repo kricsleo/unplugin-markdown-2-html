@@ -61,6 +61,9 @@ export function createMarkdownRender(options?: Options): (markdown: string) => M
 
 export function createHljsHighlighter() {
   return (code: string, lang: string) => {
+    if(!lang) {
+      return code
+    }
     if(!hljs.getLanguage(lang)) {
       console.warn(chalk.bgYellow(`[${pkgName}]:`),`No language registration for '${lang}', skipping highlight.`)
       return code
