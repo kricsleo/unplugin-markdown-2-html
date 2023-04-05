@@ -65,7 +65,7 @@ export function createHljsHighlighter() {
       return code
     }
     if(!hljs.getLanguage(lang)) {
-      console.warn(chalk.bgYellow(`[${pkgName}]:`),`No language registration for '${lang}', skipping highlight.`)
+      console.warn(chalk.bgYellow(`[${pkgName}]`) + ':',`No language registration for '${lang}', skipping highlight.`)
       return code
     }
     const result = hljs.highlight(code, { language: lang })
