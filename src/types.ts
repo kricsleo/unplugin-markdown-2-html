@@ -1,5 +1,6 @@
 import { Options as MarkdownItOptions } from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
+import { HighlightOptions } from 'markdown-it-highlightjs/types/core'
 import { TocOptions } from 'markdown-it-toc-done-right'
 
 export interface Options {
@@ -9,6 +10,11 @@ export interface Options {
   toc?: TocOptions
   /** @see https://github.com/valeriangalliat/markdown-it-anchor#usage */
   anchor?: markdownItAnchor.AnchorOptions
+  highlight?: {
+    highlightjs?: HighlightOptions
+    // todo: support shiki
+    // shiki?: ShikiOptions
+  }
 }
 
 /** transformed results */

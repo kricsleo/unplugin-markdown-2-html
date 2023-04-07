@@ -3,9 +3,9 @@ import markdownItAnchor from 'markdown-it-anchor'
 import markdownItAttrs from 'markdown-it-attrs'
 import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
-import hljs from 'highlight.js'
-import chalk from 'chalk'
 import { Markdown, Options } from './types'
+import MarkdownItHljs from 'markdown-it-highlightjs'
+import { HighlightOptions } from 'markdown-it-highlightjs/types/core'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
@@ -25,14 +25,14 @@ export const meta = ${JSON.stringify(meta)}
 }
 
 export function createMarkdownRender(options?: Options): (markdown: string) => Markdown {
-  const highlight = createHljsHighlighter()
   let toc: string
   let meta: Record<string, unknown>
   const markdownIt = new MakrdownIt({ 
     html: true,
-    highlight,
     ...options?.markdown
   })
+  // todo: support shiki
+  .use(MarkdownItHljs, options?.highlight?.highlightjs)
   .use(markdownItAttrs)
   .use(markdownItToc, {
     listType: 'ul',
@@ -57,18 +57,4 @@ export function createMarkdownRender(options?: Options): (markdown: string) => M
     meta
   })
   return markdownRender
-}
-
-export function createHljsHighlighter() {
-  return (code: string, lang: string) => {
-    if(!lang) {
-      return code
-    }
-    if(!hljs.getLanguage(lang)) {
-      console.warn(chalk.bgYellow(`[${pkgName}]`) + ':',`No language registration for '${lang}', skipping highlight.`)
-      return code
-    }
-    const result = hljs.highlight(code, { language: lang })
-    return result.value
-  }
 }

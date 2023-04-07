@@ -13,10 +13,10 @@ importers:
       eslint: ^8.29.0
       esno: ^0.16.3
       fast-glob: ^3.2.12
-      highlight.js: ^11.7.0
       markdown-it: ^13.0.1
       markdown-it-anchor: ^8.6.7
       markdown-it-attrs: ^4.1.6
+      markdown-it-highlightjs: ^4.0.1
       markdown-it-meta-yaml: ^0.0.4
       markdown-it-toc-done-right: ^4.2.0
       nodemon: ^2.0.20
@@ -30,10 +30,10 @@ importers:
       webpack: ^5.75.0
     dependencies:
       chalk: 4.1.2
-      highlight.js: 11.7.0
       markdown-it: 13.0.1
       markdown-it-anchor: 8.6.7_ea7kj7wzjkld5jo2noyjqxi764
       markdown-it-attrs: 4.1.6_markdown-it@13.0.1
+      markdown-it-highlightjs: 4.0.1
       markdown-it-meta-yaml: 0.0.4
       markdown-it-toc-done-right: 4.2.0
       unplugin: 1.1.0
@@ -4407,6 +4407,12 @@ packages:
       markdown-it: '>= 9.0.0'
     dependencies:
       markdown-it: 13.0.1
+    dev: false
+
+  /markdown-it-highlightjs/4.0.1:
+    resolution: {integrity: sha512-EPXwFEN6P5nqR3G4KjT20r20xbGYKMMA/360hhSYFmeoGXTE6hsLtJAiB/8ID8slVH4CWHHEL7GX0YenyIstVQ==}
+    dependencies:
+      highlight.js: 11.7.0
     dev: false
 
   /markdown-it-meta-yaml/0.0.4:
