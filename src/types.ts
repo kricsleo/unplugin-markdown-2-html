@@ -14,6 +14,12 @@ export interface Options {
     highlightjs?: HighlightOptions
     // todo: support shiki
     // shiki?: ShikiOptions
+    shiki?: boolean
+
+    // support prismjs
+    // roadmap for prismjs v2: https://github.com/PrismJS/prism/discussions/3531
+    // prismjs throws error when language not found?
+    prismjs?: boolean
   }
 }
 
