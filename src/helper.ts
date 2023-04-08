@@ -13,7 +13,7 @@ import 'prismjs/components/prism-typescript'
 // import 'prismjs/components/prism-html'
 // import 'prismjs/components/prism-css'
 
-import shiki, { BUNDLED_LANGUAGES, BUNDLED_THEMES, Theme } from 'shiki'
+import { getHighlighter, BUNDLED_LANGUAGES, BUNDLED_THEMES } from 'shiki'
 import { Lang } from 'shiki'
 
 export const pkgName = 'unplugin-markdown-2-html'
@@ -33,9 +33,10 @@ export const meta = ${JSON.stringify(meta)}
   }
 }
 
-export async function createMarkdownRender(options?: Options): Promise<(markdown: string) => Markdown> {
+export async function createMarkdownRender(options?: Options) {
   let toc: string
   let meta: Record<string, unknown>
+  let shikiHighlight: (code: string, language?: string | undefined, theme?: string | undefined) => string
   const markdownIt = new MakrdownIt({ 
     html: true,
     ...options?.markdown
@@ -46,7 +47,7 @@ export async function createMarkdownRender(options?: Options): Promise<(markdown
   } else if (options?.highlight?.prismjs) {
     markdownIt.set({ highlight: prismjsHighlight })
   } else if (options?.highlight?.shiki) {
-    const shikiHighlight = await createShikiHighlight()
+    shikiHighlight = await createShikiHighlight()
     markdownIt.set({ highlight: shikiHighlight })
   }
   markdownIt
@@ -67,12 +68,15 @@ export async function createMarkdownRender(options?: Options): Promise<(markdown
   .use(markdownItMetaYaml, {
     cb: metaJSON => meta = metaJSON
   } as MarkdownItMetaYamlOptions)
-  const markdownRender = (markdown: string) => ({
-    markdown,
-    html: markdownIt.render(markdown),
-    toc,
-    meta
-  })
+  const markdownRender = (markdown: string, theme?: string) => {
+    if(options?.highlight?.shiki && theme) {
+      const themedShikiHighlight = 
+        (code: string, lang: string) => shikiHighlight!(code, lang, theme)
+      markdownIt.set({ highlight: themedShikiHighlight })
+    }
+    const html = markdownIt.render(markdown)
+    return { markdown, html, toc, meta }
+  }
   return markdownRender
 }
 
@@ -95,11 +99,11 @@ function prismjsHighlight(code: string, language?: string) {
  * todo shiki
  */
 async function createShikiHighlight() {
-  const highlighter = await shiki.getHighlighter({
+  const highlighter = await getHighlighter({
     langs: BUNDLED_LANGUAGES,
     themes: BUNDLED_THEMES
   })
-  return (code: string, language?: string) => {
+  return (code: string, language?: string, theme?: string) => {
     const lang = language as Lang
     if(!lang) {
       return code
@@ -110,7 +114,7 @@ async function createShikiHighlight() {
     // if(!highlighter.getLoadedThemes().includes(theme as Theme)) {
     //   await highlighter.loadTheme(theme as Theme)
     // }
-    const html = highlighter.codeToHtml(code, { lang })
+    const html = highlighter.codeToHtml(code, { lang, theme })
     return html
   }
 }
