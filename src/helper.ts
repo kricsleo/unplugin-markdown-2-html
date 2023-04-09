@@ -13,8 +13,7 @@ import 'prismjs/components/prism-typescript'
 // import 'prismjs/components/prism-html'
 // import 'prismjs/components/prism-css'
 
-import { getHighlighter, BUNDLED_LANGUAGES, BUNDLED_THEMES } from 'shiki'
-import { Lang } from 'shiki'
+import { getHighlighter, BUNDLED_LANGUAGES, BUNDLED_THEMES, Lang } from 'shiki'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
