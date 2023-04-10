@@ -30,3 +30,5 @@ export interface Markdown {
   toc: string
   meta: Record<string, unknown>
 }
+
+export type VSCodeExtensionId = `${string}.${string}`
