@@ -2,6 +2,7 @@ import { Options as MarkdownItOptions } from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
 import { HighlightOptions } from 'markdown-it-highlightjs/types/core'
 import { TocOptions } from 'markdown-it-toc-done-right'
+import { Theme } from 'shiki'
 
 export interface Options {
   /** @see https://github.com/markdown-it/markdown-it#init-with-presets-and-options */
@@ -14,7 +15,7 @@ export interface Options {
     highlightjs?: HighlightOptions
     // todo: support shiki
     // shiki?: ShikiOptions
-    shiki?: boolean
+    shiki?: { theme?: ShikiTheme }
 
     // support prismjs
     // roadmap for prismjs v2: https://github.com/PrismJS/prism/discussions/3531
@@ -32,3 +33,5 @@ export interface Markdown {
 }
 
 export type VSCodeExtensionId = `${string}.${string}`
+export type RemoteVSCodeThemeId = `${VSCodeExtensionId}.${string}`
+export type ShikiTheme = Theme | RemoteVSCodeThemeId

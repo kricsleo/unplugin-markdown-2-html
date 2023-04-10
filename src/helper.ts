@@ -14,6 +14,7 @@ import 'prismjs/components/prism-typescript'
 // import 'prismjs/components/prism-css'
 
 import { getHighlighter, BUNDLED_LANGUAGES, BUNDLED_THEMES, Lang } from 'shiki'
+import { createShikiHighlighter } from './shiki'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
@@ -35,7 +36,6 @@ export const meta = ${JSON.stringify(meta)}
 export async function createMarkdownRender(options?: Options) {
   let toc: string
   let meta: Record<string, unknown>
-  let shikiHighlight: (code: string, language?: string | undefined, theme?: string | undefined) => string
   const markdownIt = new MakrdownIt({ 
     html: true,
     ...options?.markdown
@@ -46,7 +46,8 @@ export async function createMarkdownRender(options?: Options) {
   } else if (options?.highlight?.prismjs) {
     markdownIt.set({ highlight: prismjsHighlight })
   } else if (options?.highlight?.shiki) {
-    shikiHighlight = await createShikiHighlight()
+    const shikiHighlight = await createShikiHighlighter()
+    // @ts-expect-error
     markdownIt.set({ highlight: shikiHighlight })
   }
   markdownIt
@@ -67,12 +68,7 @@ export async function createMarkdownRender(options?: Options) {
   .use(markdownItMetaYaml, {
     cb: metaJSON => meta = metaJSON
   } as MarkdownItMetaYamlOptions)
-  const markdownRender = (markdown: string, theme?: string) => {
-    if(options?.highlight?.shiki && theme) {
-      const themedShikiHighlight = 
-        (code: string, lang: string) => shikiHighlight!(code, lang, theme)
-      markdownIt.set({ highlight: themedShikiHighlight })
-    }
+  const markdownRender = (markdown: string) => {
     const html = markdownIt.render(markdown)
     return { markdown, html, toc, meta }
   }
@@ -92,28 +88,4 @@ function prismjsHighlight(code: string, language?: string) {
   // }
   const html = prismjs.highlight(code, prismjs.languages[language], language)
   return html
-}
-
-/**
- * todo shiki
- */
-async function createShikiHighlight() {
-  const highlighter = await getHighlighter({
-    langs: BUNDLED_LANGUAGES,
-    themes: BUNDLED_THEMES
-  })
-  return (code: string, language?: string, theme?: string) => {
-    const lang = language as Lang
-    if(!lang) {
-      return code
-    }
-    // if(!highlighter.getLoadedLanguages().includes(lang)) {
-    //   await highlighter.loadLanguage(lang)
-    // }
-    // if(!highlighter.getLoadedThemes().includes(theme as Theme)) {
-    //   await highlighter.loadTheme(theme as Theme)
-    // }
-    const html = highlighter.codeToHtml(code, { lang, theme })
-    return html
-  }
 }

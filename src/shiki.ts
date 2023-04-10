@@ -1,24 +1,22 @@
-import { VSCodeExtensionId } from './types';
+import { RemoteVSCodeThemeId, VSCodeExtensionId } from './types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
 import fs from 'fs-extra'
-import shiki, { Theme, Lang } from 'shiki'
+import shiki, { Theme, Lang, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
 
-export async function createShikiHighlighter() {
-  const highlighter = await shiki.getHighlighter({})
-  return async (code: string, language?: Lang, theme?: Theme | VSCodeExtensionId) => {
+export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId = 'vitesse-dark') {
+  const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES })
+  if(isBuiltinTheme(theme)) {
+    await highlighter.loadTheme(theme)
+  } else {
+    const themeJSON = await downloadVSCodeTheme(theme)
+    await highlighter.loadTheme(themeJSON)
+  }
+  return (code: string, language?: Lang) => {
     if(!language) {
       return code
     }
-    if(!highlighter.getLoadedLanguages().includes(language)) {
-      // todo: support download theme from VS Code market
-      await highlighter.loadLanguage(language)
-    }
-    // todo: conver and load theme from VS Code market
-    // if(!highlighter.getLoadedThemes().includes(theme)) {
-    //   await highlighter.loadTheme()
-    // }
     const html = highlighter.codeToHtml(code, { lang: language, theme })
     return html
   }
@@ -28,12 +26,13 @@ export async function createShikiHighlighter() {
  * Download theme from VS Code market.
  * .Eg. kricsleo.gentle-clen
  */
-async function downloadVSCodeTheme(extensionId: VSCodeExtensionId, theme: string) {
+async function downloadVSCodeTheme(remoteVSCodeThemeId: RemoteVSCodeThemeId) {
+  const [publisher, extId, theme] = remoteVSCodeThemeId.split('.')
+  const extensionId = publisher + '.' + extId
   const tmpPath = `tmp/${extensionId}`
   const isThemeExist = await fs.pathExists(tmpPath)
 
   if(!isThemeExist) {
-    const [publisher, extId] = extensionId.split('.')
     const themeLink = 
       `https://${publisher}.gallery.vsassets.io` +
       `/_apis/public/gallery/publisher/${publisher}` +
@@ -61,6 +60,10 @@ async function downloadVSCodeTheme(extensionId: VSCodeExtensionId, theme: string
   // const absPath = path.resolve(pkgJSONPath, themeConfig.path)
   const themeJSON = await fs.readJSON(themeConfig.path)
   return themeJSON
+}
+
+function isBuiltinTheme(theme: Theme | RemoteVSCodeThemeId): theme is Theme {
+  return BUNDLED_THEMES.includes(theme as Theme)
 }
 
 interface VSCodeThemePkgJSON {
