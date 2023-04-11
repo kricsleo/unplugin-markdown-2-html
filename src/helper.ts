@@ -41,12 +41,12 @@ export async function createMarkdownRender(options?: Options) {
     ...options?.markdown
   })
   // todo: support shiki
-  if(!options?.highlight || options.highlight.highlightjs) {
+  if(options?.highlight?.highlightjs) {
     markdownIt.use(MarkdownItHljs, options?.highlight?.highlightjs)
   } else if (options?.highlight?.prismjs) {
     markdownIt.set({ highlight: prismjsHighlight })
   } else if (options?.highlight?.shiki) {
-    const shikiHighlight = await createShikiHighlighter()
+    const shikiHighlight = await createShikiHighlighter(options.highlight.shiki.theme)
     // @ts-expect-error
     markdownIt.set({ highlight: shikiHighlight })
   }

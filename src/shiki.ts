@@ -1,9 +1,10 @@
-import { RemoteVSCodeThemeId, VSCodeExtensionId } from './types';
+import { RemoteVSCodeThemeId } from './types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
 import fs from 'fs-extra'
 import shiki, { Theme, Lang, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
+import path from 'path'
 
 export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId = 'vitesse-dark') {
   const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES })
@@ -13,11 +14,12 @@ export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId 
     const themeJSON = await downloadVSCodeTheme(theme)
     await highlighter.loadTheme(themeJSON)
   }
+  const themeName = isBuiltinTheme(theme) ? theme : theme.split('.')[2]
   return (code: string, language?: Lang) => {
     if(!language) {
       return code
     }
-    const html = highlighter.codeToHtml(code, { lang: language, theme })
+    const html = highlighter.codeToHtml(code, { lang: language, theme: themeName })
     return html
   }
 }
@@ -42,11 +44,15 @@ async function downloadVSCodeTheme(remoteVSCodeThemeId: RemoteVSCodeThemeId) {
     if(!res.ok) {
       throw new Error(`Download \`${extensionId}\` failed: ${res.statusText}`)
     }
-    const buffer = await res.arrayBuffer();
+    const buffer = Buffer.from(await res.arrayBuffer());
     const bufferStream = new stream.Readable();
     bufferStream.push(buffer);
     bufferStream.push(null);
-    bufferStream.pipe(unzipper.Extract({ path: tmpPath }));
+    await new Promise((rs, rj) => {
+      bufferStream.pipe(unzipper.Extract({ path: tmpPath }))
+      .on('close', rs)
+      .on('error', rj)
+    })
   }
   
   const pkgJSON: VSCodeThemePkgJSON = await fs.readJson(`${tmpPath}/extension/package.json`)
@@ -57,8 +63,8 @@ async function downloadVSCodeTheme(remoteVSCodeThemeId: RemoteVSCodeThemeId) {
       .join(' | ')
     throw new Error(`Not found theme \`${theme}\`, but found ${avaliableThemes}`)
   }
-  // const absPath = path.resolve(pkgJSONPath, themeConfig.path)
-  const themeJSON = await fs.readJSON(themeConfig.path)
+  const themePath = path.resolve(tmpPath, 'extension', themeConfig.path)
+  const themeJSON = await fs.readJSON(themePath)
   return themeJSON
 }
 

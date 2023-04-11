@@ -12,9 +12,10 @@ export default createUnplugin<Options | undefined>(options => {
     transformInclude(id: string) {
       return /\.(md|markdown)$/i.test(id) 
     },
-    async transform(markdown: string) {
+    async transform(markdown: string,) {
       const transformer = await markdownTransformer
-      return transformer(markdown)
+      const transformed = transformer(markdown)
+      return transformed
     }
   }
 })
