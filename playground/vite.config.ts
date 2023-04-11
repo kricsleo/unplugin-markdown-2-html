@@ -3,11 +3,7 @@
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
-import Pages from 'vite-plugin-pages'
-import Components from 'unplugin-vue-components/vite'
-import AutoImport from 'unplugin-auto-import/vite'
 import Unocss from 'unocss/vite'
-import Unplugin from '../src/vite'
 import unpluginMarkdown2Html from '../src/vite'
 
 export default defineConfig({
@@ -18,19 +14,10 @@ export default defineConfig({
   },
   plugins: [
     Vue(),
-    // https://github.com/hannoeru/vite-plugin-pages
-    Pages(),
-    // https://github.com/antfu/unplugin-auto-import
-    AutoImport({
-      imports: ['vue', 'vue-router'],
-      vueTemplate: true,
-    }),
-    // https://github.com/antfu/vite-plugin-components
-    Components({ dirs: [] }),
     // https://github.com/antfu/unocss => unocss.config.ts
     Unocss(),
-    Unplugin(),
-    unpluginMarkdown2Html({ highlight: { theme: 'kricsleo.gentle-clean.Gentle Clean Vitesse' }})
+    // unpluginMarkdown2Html({ highlight: {shiki: { theme: 'kricsleo.gentle-clean.Gentle Clean Vitesse' }}})
+    unpluginMarkdown2Html({highlight: { prismjs: true }})
   ],
 
   // https://github.com/vitest-dev/vitest
