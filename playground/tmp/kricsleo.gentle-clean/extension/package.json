@@ -1,0 +1,40 @@
+{
+  "name": "gentle-clean",
+  "displayName": "Gentle Clean",
+  "description": "A gentle and clean theme for VS Code.",
+  "version": "0.1.0",
+  "publisher": "kricsleo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kricsleo/vscode-theme-gentle-clean.git"
+  },
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "icon": "icon.png",
+  "contributes": {
+    "themes": [
+      {
+        "label": "Gentle Clean Vitesse",
+        "uiTheme": "vs-dark",
+        "path": "./themes/gentle-clean-vitesse.json"
+      },
+      {
+        "label": "Gentle Clean Monokai",
+        "uiTheme": "vs-dark",
+        "path": "./themes/gentle-clean-monokai.json"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "vsce package",
+    "release": "bumpp && nr build && vsce publish"
+  },
+  "devDependencies": {
+    "bumpp": "^8.2.1",
+    "vsce": "^2.15.0"
+  }
+}
