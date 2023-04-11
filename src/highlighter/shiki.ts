@@ -1,12 +1,13 @@
-import { RemoteVSCodeThemeId } from './types';
+import { RemoteVSCodeThemeId } from '../types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
 import fs from 'fs-extra'
-import shiki, { Theme, Lang, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
+import shiki, { Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
 import path from 'path'
+import json5 from 'json5'
 
-export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId = 'vitesse-dark') {
+export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId) {
   const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES })
   if(isBuiltinTheme(theme)) {
     await highlighter.loadTheme(theme)
@@ -15,7 +16,7 @@ export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId 
     await highlighter.loadTheme(themeJSON)
   }
   const themeName = isBuiltinTheme(theme) ? theme : theme.split('.')[2]
-  return (code: string, language?: Lang) => {
+  return (code: string, language?: string) => {
     if(!language) {
       return code
     }
@@ -26,12 +27,13 @@ export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId 
 
 /**
  * Download theme from VS Code market.
- * .Eg. kricsleo.gentle-clen
+ * [publisher].[extension].[ThmeName]
+ * .Eg. 'kricsleo.gentle-clen.Gentle Clean Vitesse'
  */
 async function downloadVSCodeTheme(remoteVSCodeThemeId: RemoteVSCodeThemeId) {
   const [publisher, extId, theme] = remoteVSCodeThemeId.split('.')
   const extensionId = publisher + '.' + extId
-  const tmpPath = `tmp/${extensionId}`
+  const tmpPath = `./node_modules/.tmp/${extensionId}`
   const isThemeExist = await fs.pathExists(tmpPath)
 
   if(!isThemeExist) {
@@ -56,7 +58,9 @@ async function downloadVSCodeTheme(remoteVSCodeThemeId: RemoteVSCodeThemeId) {
   }
   
   const pkgJSON: VSCodeThemePkgJSON = await fs.readJson(`${tmpPath}/extension/package.json`)
-  const themeConfig = (pkgJSON.contributes.themes || []).find(t => t.label === theme)
+  const themeConfig = (pkgJSON.contributes.themes || []).find(
+    t => t.label.toLowerCase() === theme.toLowerCase()
+  )
   if(!themeConfig) {
     const avaliableThemes = (pkgJSON.contributes.themes || [])
       .map(t => `\`${t.label}\``)
@@ -64,7 +68,8 @@ async function downloadVSCodeTheme(remoteVSCodeThemeId: RemoteVSCodeThemeId) {
     throw new Error(`Not found theme \`${theme}\`, but found ${avaliableThemes}`)
   }
   const themePath = path.resolve(tmpPath, 'extension', themeConfig.path)
-  const themeJSON = await fs.readJSON(themePath)
+  const content = await fs.readFile(themePath, { encoding: 'utf-8' })
+  const themeJSON = json5.parse(content)
   return themeJSON
 }
 

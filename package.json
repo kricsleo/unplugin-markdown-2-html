@@ -85,15 +85,11 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@types/fs-extra": "^11.0.1",
-    "@types/prismjs": "^1.26.0",
-    "@types/unzipper": "^0.10.5",
-    "chalk": "4",
-    "fs-extra": "^11.1.1",
+    "highlight.js": "^11.7.0",
+    "json5": "^2.2.3",
     "markdown-it": "^13.0.1",
     "markdown-it-anchor": "^8.6.7",
     "markdown-it-attrs": "^4.1.6",
-    "markdown-it-highlightjs": "^4.0.1",
     "markdown-it-meta-yaml": "^0.0.4",
     "markdown-it-toc-done-right": "^4.2.0",
     "node-fetch": "^3.3.1",
@@ -107,6 +103,8 @@
     "@types/markdown-it": "^12.2.3",
     "@types/markdown-it-attrs": "^4.1.0",
     "@types/node": "^18.11.13",
+    "@types/prismjs": "^1.26.0",
+    "@types/unzipper": "^0.10.5",
     "bumpp": "^8.2.1",
     "eslint": "^8.29.0",
     "esno": "^0.16.3",
@@ -119,5 +117,8 @@
     "vite": "^4.0.0",
     "vitest": "^0.25.7",
     "webpack": "^5.75.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }
