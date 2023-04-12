@@ -13,7 +13,7 @@ export interface Options {
   highlight?: HighlightOptions
 }
 
-/** transformed results */
+/** Rendered results */
 export interface Markdown {
   markdown: string
   html: string

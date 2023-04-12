@@ -3,7 +3,7 @@
 </h1>
 
 <h2 align="center">
- ✨ Transform markdown into html at build time.
+ ✨ Render markdown into HTML at build time.
 </h2>
 
 [![NPM version](https://img.shields.io/npm/v/unplugin-markdown-2-html?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-markdown-2-html)
@@ -11,12 +11,14 @@
 ## Features
 
 - 🪜 Support Vite, Rollup, Webpack, esbuild, and more - powered by [`unplugin`](https://github.com/unjs/unplugin)
-- 🚀 0-runtime when used as a plugin, transform markdown at build time - powered by [markdown-it](https://github.com/markdown-it/markdown-it)
-- 🍺 Support compile markdown content at runtime when used as a runtime for browser and nodejs
-- 🎃 Rich and customizable built-in rules of transforming markdown files
-  - Built-in code highlight - powered by [`highlight.js`](https://github.com/highlightjs/highlight.js/)
-  - Built-in support for table-of-contents
-  - Built-in support for YAML front matter
+- 🚀 0-runtime
+- 🎃 Rich and customizable built-in rules for rendering markdown
+  - Built-in code highlight 
+    - [Shiki](https://github.com/shikijs/shiki) - **The most beautiful**
+    - [PrismJS](https://github.com/PrismJS/prism)
+    - [highlightjs](https://github.com/highlightjs/highlight.js/)
+  - Built-in support for table-of-contents: `[TOC]`
+  - Built-in support for YAML front matter: `---`
   - Built-in support for anchors of heading
 
 ## Install
@@ -125,8 +127,6 @@ build({
 
 ## Usage
 
-### Use It as a Plugin
-
 `hello.md` for example
 <pre>
 ---
@@ -149,16 +149,16 @@ Paragraph goes here.
 
 ✨ Directly import from the markdown file
 ```ts
-import { html, toc, meta, markdown } from 'hello.md'
+import { html, toc, meta, markdown } from './hello.md'
 
 console.log(html, toc, meta, markdown)
 
 // html content 👇
 // <h1 id="h1" tabindex="-1"><a class="header-anchor" href="#h1">#</a> h1</h1>
-// <pre><code class="language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">Person</span> {
-//   <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>
-// }
-// </code></pre>
+// <pre class="shiki Gentle Clean Monokai" style="background-color: #303841" tabindex="0"><code><span class="line"><span style="color: #E7D38F">export</span><span style="color: #66B395"> </span><span style="color: #E7D38F">interface</span><span style="color: #66B395"> </span><span style="color: #FFAFCCE3">Person</span><span style="color: #66B395"> </span><span style="color: #BFC5D0DD">{</span></span>
+// <span class="line"><span style="color: #66B395">  </span><span style="color: #62C4C4">name</span><span style="color: #A6ACB9B8">:</span><span style="color: #66B395"> </span><span style="color: #62C4C4">string</span></span>
+// <span class="line"><span style="color: #BFC5D0DD">}</span></span>
+// <span class="line"></span></code></pre>
 // <h1 id="h2" tabindex="-1"><a class="header-anchor" href="#h2">#</a> h2</h1>
 // <p>Paragraph goes here.</p>
 
@@ -190,28 +190,19 @@ console.log(html, toc, meta, markdown)
 // Paragraph goes here.
 ```
 
-### Use It as Runtime
-
-```ts
-import { createMarkdownRender } from 'unplugin-markdown-2-html'
-
-// or `createMarkdownRender(options: Options)`
-const render = createMarkdownRender()
-const { html, toc, meta, markdown } = render(`# Markdown content`)
-console.log(html, toc, meta, markdown)
-```
-
 ### Options
 
 | Prop     | Type   | Required | Default | Description                                                                                                                       |
 |----------|--------|----------|---------|-----------------------------------------------------------------------------------------------------------------------------------|
-| markdown | object | ❎        | -       | How markdown content is parsed. See [MarkdownItOptions](https://github.com/markdown-it/markdown-it#init-with-presets-and-options) |
-| toc      | object | ❎        | -       | How table-of-contents is parsed. See [TocOptions](https://github.com/nagaozen/markdown-it-toc-done-right#options)                 |
-| anchor   | object | ❎        | -       | How anchors of heading is parsed. See [AnchorOptions](https://github.com/valeriangalliat/markdown-it-anchor#usage)                |
+| markdown | object | ❌        | `{ html: true }`      | How markdown is rendered. See [MarkdownItOptions](https://github.com/markdown-it/markdown-it#init-with-presets-and-options) |
+| toc      | object | ❌        | `{ listType: 'ul' }`       | How table-of-contents is rendered. See [TocOptions](https://github.com/nagaozen/markdown-it-toc-done-right#options)                 |
+| anchor   | object | ❌        | -       | How anchors of heading is rendered. See [AnchorOptions](https://github.com/valeriangalliat/markdown-it-anchor#usage)                |
+| highlight   | object | ❌        | `{ shiki: { theme: 'vitesse-dark' } }`       |  How code block is highlighted. See [Highlight Code](#highlight-code)             |
+
 
 ### Typescript Support
 
-💪🏻 Want ts-hint when importing markdown files? Just add `unplugin-markdown-2-html/markdown` to `tsconfig.json`
+💪🏻 Want ts-hint when importing markdown files? Add `unplugin-markdown-2-html/markdown` to `tsconfig.json` would make world peace :)
 
 ```json
 {
@@ -220,6 +211,32 @@ console.log(html, toc, meta, markdown)
   },
 }
 ```
+
+### Highlight Code
+
+#### Shiki vs PrismJS vs highlightjs
+
+| Highlighter     |  Beauty   | Styling | 
+|----------|--------|----------|
+| Shiki | ⭐⭐⭐⭐⭐ | Inlined style, no more code theme style file. |
+| PrismJS | ⭐⭐⭐ | Import the code theme style file yourself. |
+| highlightjs | ⭐⭐ | Import the code theme style file yourself. |
+
+As the most visually appealing recommendation, Shiki can make your code block styles look exactly the same as what you see in VS Code. It uses the same lexical parsing tool as VS Code and can generate the finest-grained colors. In comparison, the lexical granularity of PrismJS and highlightjs is much coarser, so the color effects are also relatively rough.
+
+#### Shiki Theme
+
+Use the built-in themes of Shiki, or any theme you like in the VS Code theme market.
+
+- [Built-in themes](https://github.com/shikijs/shiki/blob/main/docs/themes.md): `'css-variables' | 'dark-plus' | 'dracula-soft' | 'dracula' | 'github-dark-dimmed' | 'github-dark' | 'github-light' | 'hc_light' | 'light-plus' | 'material-theme-darker' | 'material-theme-lighter' | 'material-theme-ocean' | 'material-theme-palenight' | 'material-theme' | 'min-dark' | 'min-light' | 'monokai' | 'nord' | 'one-dark-pro' | 'poimandres' | 'rose-pine-dawn' | 'rose-pine-moon' | 'rose-pine' | 'slack-dark' | 'slack-ochin' | 'solarized-dark' | 'solarized-light' | 'vitesse-dark' | 'vitesse-light'`
+
+- Themes from VS Code Market: `<publisher>.<extId>.<themeName>`.
+
+For example: The [Gentle Clean](https://marketplace.visualstudio.com/items?itemName=kricsleo.gentle-clean) theme provides two sets of theme options: `Gentle Clean Vitesse` and `Gentle Clean Monokai`.
+
+So for option `Gentle Clean Vitesse`, the theme configuration would be `kricsleo.gentle-clean.Gentle Clean Vitesse`. For option `Gentle Clean Monokai`, the theme configuration would be `kricsleo.gentle-clean.Gentle Clean Monokai`. Remote themes are downloaded automaticly.
+
+<img alt="The '<publisher>.<extId>'" src="./screenshots/marketplace.png" width="400px" />
 
 ## License
 

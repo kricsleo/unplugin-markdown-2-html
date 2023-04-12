@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.1.6",
   "packageManager": "pnpm@7.1.1",
-  "description": "Transform markdown into html at build time.",
+  "description": "Render markdown into html at build time.",
   "license": "MIT",
   "homepage": "https://github.com/kricsleo/unplugin-markdown-2-html#readme",
   "repository": {
@@ -19,7 +19,12 @@
     "webpack",
     "rollup",
     "transform",
-    "markdown"
+    "render",
+    "HTML",
+    "markdown",
+    "highlightjs",
+    "shiki",
+    "prismjs"
   ],
   "exports": {
     ".": {
@@ -85,6 +90,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "fs-extra": "^11.1.1",
     "highlight.js": "^11.7.0",
     "json5": "^2.2.3",
     "markdown-it": "^13.0.1",
@@ -100,6 +106,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.33.1",
+    "@types/fs-extra": "^11.0.1",
     "@types/markdown-it": "^12.2.3",
     "@types/markdown-it-attrs": "^4.1.0",
     "@types/node": "^18.11.13",

@@ -2,6 +2,7 @@
 import { html } from './index.md'
 import '@kricsleo/markdown-themes/dist/prose.css'
 
+console.log(html)
 </script>
 
 <template>

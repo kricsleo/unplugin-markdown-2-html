@@ -1,9 +1,9 @@
 declare module "*.md" {
-  /** raw contents for markdown */
+  /** Raw content for markdown */
   const markdown: string
-  /** transpiled html contents for markdown */
+  /** Rendered html content for markdown */
   const html: string
-  /** transpiled table of contents for markdown */
+  /** Rendered table of contents for markdown */
   const toc: string
   /** YAML-formatted metadata for markdown */
   const meta: Record<string, unknown>
