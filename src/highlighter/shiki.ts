@@ -3,12 +3,12 @@ import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
 import fs from 'fs-extra'
-import shiki, { Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
+import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
 import path from 'path'
 import json5 from 'json5'
 
 export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId) {
-  const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES })
+  const highlighter = await getHighlighter({ langs: BUNDLED_LANGUAGES })
   if(isBuiltinTheme(theme)) {
     await highlighter.loadTheme(theme)
   } else {
