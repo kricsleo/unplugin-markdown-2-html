@@ -5,17 +5,27 @@ import type { Options } from './types'
 export * from './helper'
 
 export default createUnplugin<Options | undefined>(options => {
+  let style: string
   const markdownTransformer = createMarkdownTransformer(options)
   return {
     name: pkgName,
-    enforce: 'pre',
+    resolveId(id) {
+      return id.endsWith('unplugin-markdown-2-html.css') ? id: null
+    },
+    loadInclude(id: string) {
+      return id.endsWith('unplugin-markdown-2-html.css')
+    },
+    load(id: string) {
+      return id.endsWith('unplugin-markdown-2-html.css') ? style : null
+    },
     transformInclude(id: string) {
       return /\.(md|markdown)$/i.test(id) 
     },
     async transform(markdown: string,) {
       const transformer = await markdownTransformer
-      const transformed = transformer(markdown)
-      return transformed
+      const {content, codeStyle } = transformer(markdown)
+      style = codeStyle
+      return content
     }
   }
 })
