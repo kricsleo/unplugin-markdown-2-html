@@ -28,35 +28,44 @@ export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId)
   }
 }
 
-export async function customRender(code: string, lang: string, theme: Theme = 'vitesse-dark') {
+export async function customRender(
+  code: string, 
+  lang: string, 
+  theme: Theme = 'vitesse-dark'
+) {
   const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES, themes: BUNDLED_THEMES })
-  const tokens = highlighter.codeToThemedTokens(code, lang, theme)
+  const tokens = highlighter.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
+  let css = ''
   const html = shiki.renderToHtml(tokens, {
     elements: {
       token(props) {
-        const { } = props
-        const explanation = props.token.explanation
-        return 'hello'
+        let content = ''
+        props.token.explanation!
+          .forEach(explanation => {
+            const explanationId = getExplanationId(explanation)
+            content += `<span class="${explanationId}">${explanation.content}</span>`
+            css += `.${explanationId}{${props.style}}`
+          })
+        return content
       }
     }
   })
-  return html
+  return {html, css}
 }
 
-const scopesIdMap = new Map()
-export function getScopesId(scopes: Array<{scopeName: string}>) {
-  const scopesName = scopes.map(scope => scope.scopeName).join('|')
-
-  if(scopesIdMap.has(scopesName)) {
-    return scopesIdMap.get(scopesName)
+const explanationIdMap = new Map()
+export function getExplanationId(explanation: {scopes: Array<{scopeName: string}>}) {
+  const scopesName = explanation.scopes.map(scope => scope.scopeName).join('|')
+  if(explanationIdMap.has(scopesName)) {
+    return explanationIdMap.get(scopesName)
   }
-  const hashId = hash(scopesName)
-  scopesIdMap.set(scopesName, hashId)
-  return hashId
+  const explanationId = 'sk-' + digest(scopesName)
+  explanationIdMap.set(scopesName, explanationId)
+  return explanationId
 }
 
-function hash(text: string) {
-  return crypto.createHash('sha1').update(text).digest('base64')
+function digest(text: string) {
+  return crypto.createHash('shake256', { outputLength: 3}).update(text).digest('hex')
 }
 
 /**
