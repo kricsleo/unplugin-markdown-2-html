@@ -66,8 +66,9 @@ describe('shiki', () => {
     const result2 = await customRender(html, 'svelte', 'light-plus')
     expect(result2).toMatchInlineSnapshot(`
       {
-        "css": ".sk-7d591c{color: #800000}.sk-78e1a5{color: #800000}.sk-002d30{color: #800000}.sk-639f50{color: #000000}.sk-df3d35{color: #800000}.sk-495900{color: #800000}.sk-ca5dda{color: #800000}",
-        "html": "<pre class=\\"shiki \\" style=\\"background-color: #fff\\" tabindex=\\"0\\"><code><span class=\\"line\\"><span class=\\"sk-7d591c\\"><</span><span class=\\"sk-78e1a5\\">div</span><span class=\\"sk-002d30\\">></span><span class=\\"sk-639f50\\">hell0</span><span class=\\"sk-df3d35\\"></</span><span class=\\"sk-495900\\">div</span><span class=\\"sk-ca5dda\\">></span></span></code></pre>",
+        "css": ".sk-7d591c{color:#800000}.sk-78e1a5{color:#800000}.sk-002d30{color:#800000}.sk-639f50{color:#000000}.sk-df3d35{color:#800000}.sk-495900{color:#800000}.sk-ca5dda{color:#800000}",
+        "html": "<span class=\\"line\\"><span class=\\"sk-7d591c\\"><</span><span class=\\"sk-78e1a5\\">div</span><span class=\\"sk-002d30\\">></span><span class=\\"sk-639f50\\">hell0</span><span class=\\"sk-df3d35\\"></</span><span class=\\"sk-495900\\">div</span><span class=\\"sk-ca5dda\\">></span></span>
+      ",
       }
     `)
   })

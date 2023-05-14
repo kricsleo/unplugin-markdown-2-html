@@ -34,23 +34,31 @@ export async function customRender(
   theme: Theme = 'vitesse-dark'
 ) {
   const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES, themes: BUNDLED_THEMES })
-  const tokens = highlighter.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
+  const lineTokens = highlighter.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
+
   let css = ''
-  const html = shiki.renderToHtml(tokens, {
-    elements: {
-      token(props) {
-        let content = ''
-        props.token.explanation!
-          .forEach(explanation => {
-            const explanationId = getExplanationId(explanation)
-            content += `<span class="${explanationId}">${explanation.content}</span>`
-            css += `.${explanationId}{${props.style}}`
-          })
-        return content
-      }
-    }
+  let html = ''
+  lineTokens.forEach(lineToken => {
+    html += '<span class="line">'
+    lineToken.forEach(token => {
+      token.explanation!
+        .forEach(explanation => {
+          const explanationId = getExplanationId(explanation)
+          html += `<span class="${explanationId}">${explanation.content}</span>`
+          const style = [
+            ['color:', token.color],
+            ['font-weight:', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
+            ['font-style:', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
+            ['text-decoration:', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
+          ].filter(t => t[1])
+            .map(t => t.join(''))
+            .join(';')
+          css += `.${explanationId}{${style}}`
+        })
+    })
+    html += '</span>\n'
   })
-  return {html, css}
+  return { html, css }
 }
 
 const explanationIdMap = new Map()
