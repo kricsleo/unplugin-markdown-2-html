@@ -28,10 +28,30 @@ export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId)
   }
 }
 
+type MTheme = Theme | Record<string, Theme>
+export async function multiThemeRender(
+  code: string, 
+  lang: string, 
+  theme: MTheme = 'vitesse-dark'
+) {
+  const themeOpts = typeof theme === 'string' ? {
+    default: theme
+  } : theme
+  const results = await Promise.all(Object.entries(themeOpts).map(async ([alias, themeName]) => {
+    if(alias === 'default') {
+      return await customRender(code, lang, themeName, '')
+    }
+    return await customRender(code, lang, themeName, alias)
+  }))
+  const css = results.map(t => t.css).join('')
+  return { html: results[0].html, css }
+}
+
 export async function customRender(
   code: string, 
   lang: string, 
-  theme: Theme = 'vitesse-dark'
+  theme: Theme = 'vitesse-dark',
+  themeAlias: string = ''
 ) {
   const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES, themes: BUNDLED_THEMES })
   const lineTokens = highlighter.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
@@ -53,7 +73,8 @@ export async function customRender(
           ].filter(t => t[1])
             .map(t => t.join(''))
             .join(';')
-          css += `.${explanationId}{${style}}`
+          const className = themeAlias ? `.${themeAlias} .${explanationId}` : `.${explanationId}`;
+          css += `${className}{${style}}`
         })
     })
     html += '</span>\n'

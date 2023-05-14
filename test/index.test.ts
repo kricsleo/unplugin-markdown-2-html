@@ -1,5 +1,5 @@
 import { test, expect, it, describe } from 'vitest'
-import { customRender } from '../src/highlighter/shiki'
+import { customRender, multiThemeRender } from '../src/highlighter/shiki'
 // import markdownRaw from '../playground/index.md?raw'
 // import { transformMarkdown } from '../src/helper'
 
@@ -67,6 +67,20 @@ describe('shiki', () => {
     expect(result2).toMatchInlineSnapshot(`
       {
         "css": ".sk-7d591c{color:#800000}.sk-78e1a5{color:#800000}.sk-002d30{color:#800000}.sk-639f50{color:#000000}.sk-df3d35{color:#800000}.sk-495900{color:#800000}.sk-ca5dda{color:#800000}",
+        "html": "<span class=\\"line\\"><span class=\\"sk-7d591c\\"><</span><span class=\\"sk-78e1a5\\">div</span><span class=\\"sk-002d30\\">></span><span class=\\"sk-639f50\\">hell0</span><span class=\\"sk-df3d35\\"></</span><span class=\\"sk-495900\\">div</span><span class=\\"sk-ca5dda\\">></span></span>
+      ",
+      }
+    `)
+  })
+
+  it('multi theme render', async () => {
+    const result = await multiThemeRender(html, 'svelte', { 
+      default: 'dark-plus', 
+      dark: 'github-dark'
+    })
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "css": ".sk-7d591c{color:#808080}.sk-78e1a5{color:#569CD6}.sk-002d30{color:#808080}.sk-639f50{color:#D4D4D4}.sk-df3d35{color:#808080}.sk-495900{color:#569CD6}.sk-ca5dda{color:#808080}.dark .sk-7d591c{color:#E1E4E8}.dark .sk-78e1a5{color:#85E89D}.dark .sk-002d30{color:#E1E4E8}.dark .sk-639f50{color:#E1E4E8}.dark .sk-df3d35{color:#E1E4E8}.dark .sk-495900{color:#85E89D}.dark .sk-ca5dda{color:#E1E4E8}",
         "html": "<span class=\\"line\\"><span class=\\"sk-7d591c\\"><</span><span class=\\"sk-78e1a5\\">div</span><span class=\\"sk-002d30\\">></span><span class=\\"sk-639f50\\">hell0</span><span class=\\"sk-df3d35\\"></</span><span class=\\"sk-495900\\">div</span><span class=\\"sk-ca5dda\\">></span></span>
       ",
       }
