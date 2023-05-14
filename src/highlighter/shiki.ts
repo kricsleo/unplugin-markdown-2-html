@@ -4,8 +4,11 @@ import stream from 'stream'
 import unzipper from 'unzipper'
 import fs from 'fs-extra'
 import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
+import * as shiki from 'shiki'
 import path from 'path'
 import json5 from 'json5'
+import { inspect } from 'node:util'
+import crypto from 'crypto'
 
 export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId) {
   const highlighter = await getHighlighter({ langs: BUNDLED_LANGUAGES })
@@ -23,6 +26,37 @@ export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId)
     const html = highlighter.codeToHtml(code, { lang: language, theme: themeName })
     return html
   }
+}
+
+export async function customRender(code: string, lang: string, theme: Theme = 'vitesse-dark') {
+  const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES, themes: BUNDLED_THEMES })
+  const tokens = highlighter.codeToThemedTokens(code, lang, theme)
+  const html = shiki.renderToHtml(tokens, {
+    elements: {
+      token(props) {
+        const { } = props
+        const explanation = props.token.explanation
+        return 'hello'
+      }
+    }
+  })
+  return html
+}
+
+const scopesIdMap = new Map()
+export function getScopesId(scopes: Array<{scopeName: string}>) {
+  const scopesName = scopes.map(scope => scope.scopeName).join('|')
+
+  if(scopesIdMap.has(scopesName)) {
+    return scopesIdMap.get(scopesName)
+  }
+  const hashId = hash(scopesName)
+  scopesIdMap.set(scopesName, hashId)
+  return hashId
+}
+
+function hash(text: string) {
+  return crypto.createHash('sha1').update(text).digest('base64')
 }
 
 /**

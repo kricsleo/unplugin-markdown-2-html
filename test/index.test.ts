@@ -1,4 +1,5 @@
-// import { test, expect, it } from 'vitest'
+import { test, expect, it, describe } from 'vitest'
+import { customRender } from '../src/highlighter/shiki'
 // import markdownRaw from '../playground/index.md?raw'
 // import { transformMarkdown } from '../src/helper'
 
@@ -17,3 +18,56 @@
 //   "
 // `)
 // })
+
+const ts = 
+`
+interface Foo {
+  bar: string
+}
+interface Baz {
+  qux: string
+}
+`
+const html = 
+`<div>hell0</div>`
+const step = 
+`
+1. generate id
+2. map id => color
+3. generate css
+
+theme1
+:{
+  --k-1: pink;
+}
+<span style="color:var(--k-1)">interface</span>
+
+
+theme2
+:{
+  --k-1: yellow;
+}
+<span style="color:var(--k-1)">interface</span>
+`
+describe('shiki', () => {
+  it('custom render', async () => {
+    // const result = await customRender(ts, 'ts')
+    // expect(result).toMatchInlineSnapshot(`
+    //   "<pre class=\\"shiki \\" style=\\"background-color: #fff\\" tabindex=\\"0\\"><code><span class=\\"line\\"></span>
+    //   <span class=\\"line\\">hellohellohellohellohello</span>
+    //   <span class=\\"line\\">hellohellohellohello</span>
+    //   <span class=\\"line\\">hello</span>
+    //   <span class=\\"line\\">hellohellohellohellohello</span>
+    //   <span class=\\"line\\">hellohellohellohello</span>
+    //   <span class=\\"line\\">hello</span>
+    //   <span class=\\"line\\"></span></code></pre>"
+    // `)
+
+    const result2 = await customRender(html, 'svelte', 'light-plus')
+    expect(result2).toMatchInlineSnapshot(`
+      "<pre class=\\"shiki \\" style=\\"background-color: #fff\\" tabindex=\\"0\\"><code><span class=\\"line\\"></span>
+      <span class=\\"line\\">hellohellohello</span>
+      <span class=\\"line\\"></span></code></pre>"
+    `)
+  })
+})
