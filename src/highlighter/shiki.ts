@@ -1,4 +1,4 @@
-import { HighlighTheme, RemoteVSCodeThemeId } from '../types';
+import { HighlighTheme, RemoteVSCodeThemeId, ShikiTheme } from '../types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
@@ -27,28 +27,24 @@ export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId)
   }
 }
 
-type MTheme = Theme | Record<string, Theme>
-export async function multiThemeRender(
-  code: string, 
-  lang: string, 
-  theme: MTheme = 'vitesse-dark'
-) {
-  const themeOpts = typeof theme === 'string' ? {
-    default: theme
-  } : theme
-  const results = await Promise.all(Object.entries(themeOpts).map(async ([alias, themeName]) => {
-    if(alias === 'default') {
-      return await customRender(code, lang, themeName, '')
-    }
-    return await customRender(code, lang, themeName, alias)
-  }))
-  const css = results.map(t => t.css).join('')
-  return { html: results[0].html, css }
-}
-
 export class ShikiHighlighter {
-  private explanationIdMap = new Map()
+  private static explanationIdMap = new Map()
   private highlighter: shiki.Highlighter | undefined
+
+  private static getExplanationId(explanation: {scopes: Array<{scopeName: string}>}) {
+    const scopesName = explanation.scopes.map(scope => scope.scopeName).join('|')
+    if(ShikiHighlighter.explanationIdMap.has(scopesName)) {
+      return ShikiHighlighter.explanationIdMap.get(scopesName)
+    }
+    const explanationId = 'sk-' + ShikiHighlighter.digest(scopesName)
+    ShikiHighlighter.explanationIdMap.set(scopesName, explanationId)
+    return explanationId
+  }
+
+  private static digest(text: string) {
+    return crypto.createHash('shake256', { outputLength: 3}).update(text).digest('hex')
+  }
+
   async highlight(code: string, lang: shiki.Lang, theme: HighlighTheme) {
     const themes = typeof theme === 'string' 
       ? { default: theme}
@@ -66,7 +62,7 @@ export class ShikiHighlighter {
       }
     }
 
-    // todo: validate theme loaded from <pubid.extid>
+    // todo: validate theme name loaded from <pubid.extid>
     const notLoadedThemes = Array.from(new Set(Object.values(themes)))
       .filter(t => !this.highlighter!.getLoadedThemes().includes(t as unknown as shiki.Theme))
     if(notLoadedThemes.length) {
@@ -89,59 +85,48 @@ export class ShikiHighlighter {
       }))
     }
     const avaliableThemes = Array.from(new Set(Object.values(themes)))
-    // todo: multi render
+    const renderResults = avaliableThemes.map(t => ({theme: t, rendered: this.render(code, lang, t)}))
+    const html = renderResults[0]
+    const css = Object.entries(themes).map(([themeAlias, themeName]) => {
+      const themeResult = renderResults.find(result => result.theme === themeName)
+      return Object.entries(themeResult!.rendered.styles)
+          .map(([className, style]) => themeAlias === 'default' 
+            ? `.${className}{${style}}`
+            : `.${themeAlias} .${className}{${style}}`
+          )
+          .join('')
+    }).join('')
+    return { html, css }
   }
-}
 
-export async function customRender(
-  code: string, 
-  lang: string, 
-  theme: Theme = 'vitesse-dark',
-  themeAlias: string = ''
-) {
-  const highlighter = await shiki.getHighlighter({ langs: BUNDLED_LANGUAGES, themes: BUNDLED_THEMES })
-  const lineTokens = highlighter.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
-
-  let css = ''
-  let html = ''
-  lineTokens.forEach(lineToken => {
-    html += '<span class="line">'
-    lineToken.forEach(token => {
-      token.explanation!
-        .forEach(explanation => {
-          const explanationId = getExplanationId(explanation)
-          html += `<span class="${explanationId}">${explanation.content}</span>`
-          const style = [
-            ['color:', token.color],
-            ['font-weight:', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
-            ['font-style:', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
-            ['text-decoration:', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
-          ].filter(t => t[1])
-            .map(t => t.join(''))
-            .join(';')
-          const className = themeAlias ? `.${themeAlias} .${explanationId}` : `.${explanationId}`;
-          css += `${className}{${style}}`
-        })
+  render(code: string, lang: shiki.Lang, theme: ShikiTheme) {
+    const styles: Record<string, string> = {}
+    let html = ''
+    const lineTokens = this.highlighter!.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
+    lineTokens.forEach(lineToken => {
+      html += '<span class="line">'
+      lineToken.forEach(token => {
+        token.explanation!
+          .forEach(explanation => {
+            const explanationId = ShikiHighlighter.getExplanationId(explanation)
+            html += `<span class="${explanationId}">${explanation.content}</span>`
+            const style = [
+              ['color:', token.color],
+              ['font-weight:', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
+              ['font-style:', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
+              ['text-decoration:', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
+            ].filter(t => t[1])
+              .map(t => t.join(''))
+              .join(';')
+            styles[explanationId] = style
+          })
+      })
+      html += '</span>\n'
     })
-    html += '</span>\n'
-  })
-  return { html, css }
-}
-
-const explanationIdMap = new Map()
-export function getExplanationId(explanation: {scopes: Array<{scopeName: string}>}) {
-  const scopesName = explanation.scopes.map(scope => scope.scopeName).join('|')
-  if(explanationIdMap.has(scopesName)) {
-    return explanationIdMap.get(scopesName)
+    return { html, styles }
   }
-  const explanationId = 'sk-' + digest(scopesName)
-  explanationIdMap.set(scopesName, explanationId)
-  return explanationId
 }
 
-function digest(text: string) {
-  return crypto.createHash('shake256', { outputLength: 3}).update(text).digest('hex')
-}
 
 /**
  * Download theme from VS Code market.

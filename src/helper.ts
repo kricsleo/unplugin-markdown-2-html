@@ -26,7 +26,7 @@ export const meta = ${JSON.stringify(meta)}
 export async function createMarkdownRender(options?: Options) {
   const highlighter = await createHighlighter(options?.highlight)
   let codeStyle: string
-  const highlight = (code: string, lang: string) => {
+  const highlight = (code: string, lang: string,) => {
     const highlighted =  highlighter(code, lang)
     const { css, extractedCode } = extractStyle(highlighted)
     codeStyle = css
