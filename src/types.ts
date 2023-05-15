@@ -33,3 +33,5 @@ export type Highlighter = (code: string, language?: string) => string
 export type VSCodeExtensionId = `${string}.${string}`
 export type RemoteVSCodeThemeId = `${VSCodeExtensionId}.${string}`
 export type ShikiTheme = Theme | RemoteVSCodeThemeId
+
+export type HighlighTheme = ShikiTheme | Record<string, ShikiTheme>

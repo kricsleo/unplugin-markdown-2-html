@@ -1,4 +1,4 @@
-import { RemoteVSCodeThemeId } from '../types';
+import { HighlighTheme, RemoteVSCodeThemeId } from '../types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
@@ -7,7 +7,6 @@ import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES } from 'shiki'
 import * as shiki from 'shiki'
 import path from 'path'
 import json5 from 'json5'
-import { inspect } from 'node:util'
 import crypto from 'crypto'
 
 export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId) {
@@ -45,6 +44,53 @@ export async function multiThemeRender(
   }))
   const css = results.map(t => t.css).join('')
   return { html: results[0].html, css }
+}
+
+export class ShikiHighlighter {
+  private explanationIdMap = new Map()
+  private highlighter: shiki.Highlighter | undefined
+  async highlight(code: string, lang: shiki.Lang, theme: HighlighTheme) {
+    const themes = typeof theme === 'string' 
+      ? { default: theme}
+      : theme
+    if(!this.highlighter) {
+      this.highlighter = await shiki.getHighlighter({ langs: [lang] })
+    }
+
+    if(!this.highlighter.getLoadedLanguages().includes(lang)) {
+      if(isBuiltinLang(lang)) {
+        await this.highlighter.loadLanguage(lang)
+      } else {
+        console.warn(`No language registration for \`${lang}\`, skipped highlight`)
+        return code
+      }
+    }
+
+    // todo: validate theme loaded from <pubid.extid>
+    const notLoadedThemes = Array.from(new Set(Object.values(themes)))
+      .filter(t => !this.highlighter!.getLoadedThemes().includes(t as unknown as shiki.Theme))
+    if(notLoadedThemes.length) {
+      await Promise.all(notLoadedThemes.map(async t => {
+        if(isBuiltinTheme(t)) {
+          this.highlighter!.loadTheme(t)
+        } else {
+          try {
+            const themeJSON = await downloadVSCodeTheme(t)
+            await this.highlighter!.loadTheme(themeJSON)
+          } catch(e) {
+            Object.entries(themes).forEach(([alias, themeName]) => {
+              if(themeName === t) {
+                delete themes[alias]
+              }
+            })
+            console.warn(`Load theme \`${t}\` failed, skipped this theme.`, e)
+          }
+        }
+      }))
+    }
+    const avaliableThemes = Array.from(new Set(Object.values(themes)))
+    // todo: multi render
+  }
 }
 
 export async function customRender(
@@ -147,6 +193,10 @@ async function downloadVSCodeTheme(remoteVSCodeThemeId: RemoteVSCodeThemeId) {
 
 function isBuiltinTheme(theme: Theme | RemoteVSCodeThemeId): theme is Theme {
   return BUNDLED_THEMES.includes(theme as Theme)
+}
+
+function isBuiltinLang(lang: shiki.Lang): lang is shiki.Lang {
+  return shiki.BUNDLED_LANGUAGES.some(langRegistration => langRegistration.id === lang)
 }
 
 interface VSCodeThemePkgJSON {
