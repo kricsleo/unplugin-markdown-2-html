@@ -59,7 +59,7 @@ export async function createShikiHighlighter(options?: {
           .forEach(explanation => {
             const explanationId = getExplanationId(explanation)
             const className = 'sk-' + explanationId
-            html += `<span class="${className}">${escapeHTMLContent(explanation.content)}</span>`
+            html += `<span class="${className}">${escapeHTML(explanation.content)}</span>`
             const style = getTokenStyle(token)
             styleTokens.push({className, style })
           })
@@ -70,16 +70,14 @@ export async function createShikiHighlighter(options?: {
   }
 
   function getTokenStyle(token: shiki.IThemedToken) {
-    const style = [
-      ['color', token.color],
-      ['font-weight', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
-      ['font-style', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
-      ['text-decoration', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
-    ]
-      .filter(t => t[1])
-      .map(t => t.join(':') + ';')
-      .join('')
-    return style
+    const style: Record<string, string | undefined> = {
+      color: token.color,
+      'font-weight': token.fontStyle === shiki.FontStyle.Bold ? 'bold' : undefined,
+      'font-style': token.fontStyle === shiki.FontStyle.Italic ? 'italic' : undefined,
+      'text-decoration': token.fontStyle === shiki.FontStyle.Underline ? 'underline' : undefined
+    }
+    Object.keys(style).forEach(attr => !style[attr] && (delete style[attr]))
+    return Object.keys(style).length ? style : undefined
   }
 
   function getExplanationId(explanation: {scopes: Array<{scopeName: string}>}) {
@@ -99,116 +97,9 @@ export async function createShikiHighlighter(options?: {
   return highlight
 }
 
-function escapeHTMLContent(text: string) {
+function escapeHTML(text: string) {
   return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
-
-export class ShikiHighlighter {
-  private static explanationIdMap = new Map()
-  private highlighter: shiki.Highlighter | undefined
-
-  private static getExplanationId(explanation: {scopes: Array<{scopeName: string}>}) {
-    const scopesName = explanation.scopes.map(scope => scope.scopeName).join('|')
-    if(ShikiHighlighter.explanationIdMap.has(scopesName)) {
-      return ShikiHighlighter.explanationIdMap.get(scopesName)
-    }
-    const explanationId = 'sk-' + ShikiHighlighter.digest(scopesName)
-    ShikiHighlighter.explanationIdMap.set(scopesName, explanationId)
-    return explanationId
-  }
-
-  private static digest(text: string) {
-    return crypto.createHash('shake256', { outputLength: 3}).update(text).digest('hex')
-  }
-
-  async highlight(code: string, lang: shiki.Lang, theme: HighlighTheme) {
-    const themes = typeof theme === 'string' 
-      ? { default: theme}
-      : theme
-    if(!this.highlighter) {
-      this.highlighter = await shiki.getHighlighter({ langs: [lang] })
-    }
-
-    if(!this.highlighter.getLoadedLanguages().includes(lang)) {
-      if(isBuiltinLang(lang)) {
-        await this.highlighter.loadLanguage(lang)
-      } else {
-        console.warn(`No language registration for \`${lang}\`, skipped highlight`)
-        return code
-      }
-    }
-
-    // todo: validate theme name loaded from <pubid.extid>
-    const notLoadedThemes = Array.from(new Set(Object.values(themes)))
-      .filter(t => !this.highlighter!.getLoadedThemes().includes(t as unknown as shiki.Theme))
-    if(notLoadedThemes.length) {
-      await Promise.all(notLoadedThemes.map(async t => {
-        if(isBuiltinTheme(t)) {
-          this.highlighter!.loadTheme(t)
-        } else {
-          try {
-            const themeJSON = await downloadVSCodeTheme(t)
-            await this.highlighter!.loadTheme(themeJSON)
-          } catch(e) {
-            Object.entries(themes).forEach(([alias, themeName]) => {
-              if(themeName === t) {
-                delete themes[alias]
-              }
-            })
-            console.warn(`Load theme \`${t}\` failed, skipped this theme.`, e)
-          }
-        }
-      }))
-    }
-    const avaliableThemes = Array.from(new Set(Object.values(themes)))
-    const renderResults = avaliableThemes.map(themeName => ({theme: themeName, rendered: this.render(code, lang, themeName)}))
-    const html = renderResults[0]
-    const styleTokens = Object.entries(themes).map(([themeAlias, themeName]) => {
-      const themeResult = renderResults.find(result => result.theme === themeName)
-      const styleToken = {
-        theme: themeName,
-        themeAlias,
-        tokens: themeResult?.rendered.spanTokens
-      }
-      return styleToken;
-    })
-    return { html, styleTokens }
-  }
-
-  render(code: string, lang: shiki.Lang, theme: ShikiTheme) {
-    const spanTokens: StyleToken[] = []
-    let html = ''
-    const lineTokens = this.highlighter!.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
-    lineTokens.forEach(lineToken => {
-      html += '<span class="line">'
-      lineToken.forEach(token => {
-        token.explanation!
-          .forEach(explanation => {
-            const explanationId = ShikiHighlighter.getExplanationId(explanation)
-            html += `<span class="${explanationId}">${explanation.content}</span>`
-            const style = this.getTokenStyle(token)
-            spanTokens.push({className: 'sk-' + explanationId, style })
-          })
-      })
-      html += '</span>\n'
-    })
-    return { html, spanTokens }
-  }
-
-  getTokenStyle(token: shiki.IThemedToken) {
-    const style = [
-      ['color', token.color],
-      ['font-weight', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
-      ['font-style', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
-      ['text-decoration', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
-    ]
-      .filter(t => t[1])
-      .map(t => t.join(':') + ';')
-      .join('')
-    return style
-  }
-}
-
 
 /**
  * Download theme from VS Code market.

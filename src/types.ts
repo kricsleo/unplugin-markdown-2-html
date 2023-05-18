@@ -39,7 +39,12 @@ export type HighlighTheme = ShikiTheme | ShikiThemeMap
 
 export interface StyleToken {
   className: string
-  style: string
+  style?: {
+    color?: string
+    'font-weight'?: string
+    'font-style'?: string
+    'text-decoration'?: string
+  }
 }
 export interface ThemeToken {
   theme: string

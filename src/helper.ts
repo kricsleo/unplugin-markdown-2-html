@@ -3,7 +3,7 @@ import markdownItAnchor from 'markdown-it-anchor'
 import markdownItAttrs from 'markdown-it-attrs'
 import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
-import { Options, ThemeToken } from './types'
+import { Options, StyleToken, ThemeToken } from './types'
 import { createHighlighter } from './highlighter'
 
 export const pkgName = 'unplugin-markdown-2-html'
@@ -65,59 +65,51 @@ export async function createMarkdownRender(options?: Options) {
     themeTokens.push(highlighted.themeTokens)
     return highlighted.html
   }
-
-  function mergeThemeTokens(themeTokens: ThemeToken[][]) {
-    const merged = themeTokens.flat().reduce((all, cur) => {
-      if(!all[cur.themeAlias]) {
-        all[cur.themeAlias] = cur
-      } else {
-        const tokenSet = new Set(all[cur.themeAlias].styleTokens.concat(cur.styleTokens))
-        all[cur.themeAlias].styleTokens = Array.from(tokenSet)
-      }
-      return all
-    }, {} as Record<string, ThemeToken>)
-    return merged
-  }
-
-  function generateCSS(themeTokenMap: Record<string, ThemeToken>) {
-    return Object.values(themeTokenMap).map(themeToken => {
-      return themeToken.styleTokens
-        .map(styleToken => themeToken.themeAlias === 'default'
-          ? `.${styleToken.className}{${styleToken.style}}`
-          : `.${themeToken.themeAlias} .${styleToken.className}{${styleToken.style}}`)
-        .join('')
-    }).join('')
-  }
 }
 
-function extractStyle(code: string) {
-  // TODO: should be more accurate
-  const styleReg = /(?<=style=")([^"]*)(?=")/gmi
-  const styles = code.match(styleReg)
-  if(!styles) {
-    return { css: '', extractedCode: code }
-  }
-  const vars: string[] = []
-  const extractedCode = code.replace(styleReg, (style, p1, offset) => {
-    const kvs = style.split(';').map(kv => kv.split(':'))
-    const varStyle = kvs.map(([prop, value], idx) => {
-      const id = `--s-${offset}-${idx}`
-      vars.push(id + ':'  + value)
-      return [prop, `var(${id})`].join(':')
-    }).join(';')
-    return varStyle
-  })
-  // const varStyles = styles.map((style, idx1) => {
-  //   const kvs = style.split(';').map(kv => kv.split(':'))
-  //   const varStyle = kvs.map(([prop, value], idx2) => {
-  //     const id = `--s-${idx1}-${idx2}`
-  //     vars.push(id + ':'  + value)
-  //     return [prop, `var(${id})`].join(':')
-  //   }).join(';')
-  //   return varStyle
-  // }).join('')
-  const css = ':root{' + vars.join(';') + '}'
-  console.log({ extractedCode, css })
-  return { css, extractedCode }
+function mergeThemeTokens(themeTokens: ThemeToken[][]) {
+  const merged = themeTokens.flat().reduce((all, cur) => {
+    if(!all[cur.themeAlias]) {
+      all[cur.themeAlias] = cur
+    } else {
+      const tokenSet = new Set(all[cur.themeAlias].styleTokens.concat(cur.styleTokens))
+      all[cur.themeAlias].styleTokens = Array.from(tokenSet)
+    }
+    return all
+  }, {} as Record<string, ThemeToken>)
+  return merged
 }
 
+function generateCSS(themeTokenMap: Record<string, ThemeToken>) {
+  const themeTokens = Object.values(themeTokenMap)
+  for(let i = 0; i < themeTokens[0].styleTokens.length; i++) {
+    const matchedStyleTokens = themeTokens.map(themeToken => themeToken.styleTokens[i]);
+    const attrs: (keyof Required<StyleToken>['style'])[] = [
+      'color', 
+      'font-weight', 
+      'font-style', 
+      'text-decoration'
+    ]
+    attrs.forEach(attr => {
+      const hasAttr = matchedStyleTokens.some(styleToken => styleToken.style?.[attr])
+      matchedStyleTokens.forEach(styleToken => {
+        if(hasAttr) {
+          styleToken.style = { [attr]: 'inherit', ...styleToken.style }
+        }
+      })
+    })
+  }
+  return themeTokens.map(themeToken => {
+    return themeToken.styleTokens
+      .filter(styleToken => styleToken.style)
+      .map(styleToken => {
+        const style = Object.entries(styleToken.style!)
+          .map(([attr, value]) => attr + ':' + value)
+          .join(';')
+        return themeToken.themeAlias === 'default'
+        ? `.${styleToken.className}{${style}}`
+        : `.${themeToken.themeAlias} .${styleToken.className}{${style}}`
+      })
+      .join('')
+  }).join('')
+}
