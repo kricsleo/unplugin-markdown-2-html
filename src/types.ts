@@ -22,7 +22,7 @@ export interface Markdown {
 }
 
 export interface HighlightOptions {
-  shiki?: { theme: ShikiTheme }
+  shiki?: { theme: HighlighTheme }
   // roadmap for prismjs v2: https://github.com/PrismJS/prism/discussions/3531
   prismjs?: boolean
   highlightjs?: boolean

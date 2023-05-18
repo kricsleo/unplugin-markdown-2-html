@@ -17,7 +17,10 @@ export default defineConfig({
     // https://github.com/antfu/unocss => unocss.config.ts
     Unocss(),
     unpluginMarkdown2Html({ 
-      highlight: { shiki: { theme: 'kricsleo.gentle-clean.Gentle Clean Monokai' }}
+      highlight: { shiki: { theme: {
+        default: 'material-theme-lighter',
+        dark: 'kricsleo.gentle-clean.Gentle Clean Monokai',
+      }}}
     })
   ],
 
