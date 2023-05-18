@@ -25,7 +25,6 @@ const unplugin = createUnplugin<Options | undefined>(options => {
     async transform(markdown: string,) {
       const transformer = await markdownTransformer
       const content = transformer(markdown)
-      console.log('content', content)
       return content
     }
   }
