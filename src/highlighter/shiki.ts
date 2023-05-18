@@ -110,20 +110,26 @@ export class ShikiHighlighter {
           .forEach(explanation => {
             const explanationId = ShikiHighlighter.getExplanationId(explanation)
             html += `<span class="${explanationId}">${explanation.content}</span>`
-            const style = [
-              ['color:', token.color],
-              ['font-weight:', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
-              ['font-style:', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
-              ['text-decoration:', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
-            ].filter(t => t[1])
-              .map(t => t.join(''))
-              .join(';')
+            const style = this.getTokenStyle(token)
             styles[explanationId] = style
           })
       })
       html += '</span>\n'
     })
     return { html, styles }
+  }
+
+  getTokenStyle(token: shiki.IThemedToken) {
+    const style = [
+      ['color', token.color],
+      ['font-weight', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
+      ['font-style', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
+      ['text-decoration', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
+    ]
+      .filter(t => t[1])
+      .map(t => t.join(':') + ';')
+      .join('')
+    return style
   }
 }
 
