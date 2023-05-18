@@ -1,12 +1,12 @@
 import prismjs from 'prismjs'
 import 'prismjs/components'
-import { StyleToken } from '../types'
+import { ThemeToken } from '../types'
 
 export function prismjsHighlighter(code: string, language?: string) {
   if(!language) {
-    return { html: code, styleTokens: [] as StyleToken[]}
+    return { html: code, themeTokens: [] as ThemeToken[]}
   }
   const html = prismjs.highlight(code, prismjs.languages[language], language)
-  // todo: support styleToken
-  return {html, styleTokens: [] as StyleToken[]}
+  // todo: themeTokens
+  return {html, themeTokens: [] as ThemeToken[]}
 }

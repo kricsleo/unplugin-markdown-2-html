@@ -9,24 +9,23 @@ const unplugin = createUnplugin<Options | undefined>(options => {
   const markdownTransformer = createMarkdownTransformer(options)
   const plugin = {
     name: pkgName,
-    resolveId(id) {
-      return id.endsWith('unplugin-markdown-2-html.css') ? id: null
-    },
-    loadInclude(id: string) {
-      return id.endsWith('unplugin-markdown-2-html.css')
-    },
-    load(id: string) {
-      // todo: update virtual module
-      return id.endsWith('unplugin-markdown-2-html.css') ? style : null
-    },
+    // resolveId(id) {
+    //   return id.endsWith('unplugin-markdown-2-html.css') ? id: null
+    // },
+    // loadInclude(id: string) {
+    //   return id.endsWith('unplugin-markdown-2-html.css')
+    // },
+    // load(id: string) {
+    //   // todo: update virtual module
+    //   return id.endsWith('unplugin-markdown-2-html.css') ? style : null
+    // },
     transformInclude(id: string) {
       return /\.(md|markdown)$/i.test(id) 
     },
     async transform(markdown: string,) {
       const transformer = await markdownTransformer
-      const {content, codeStyle } = transformer(markdown)
-      style += codeStyle
-      console.log('unplugin', plugin)
+      const content = transformer(markdown)
+      console.log('content', content)
       return content
     }
   }

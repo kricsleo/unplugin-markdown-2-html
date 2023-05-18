@@ -3,7 +3,7 @@ import markdownItAnchor from 'markdown-it-anchor'
 import markdownItAttrs from 'markdown-it-attrs'
 import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
-import { Options, StyleToken } from './types'
+import { Options, ThemeToken } from './types'
 import { createHighlighter } from './highlighter'
 
 export const pkgName = 'unplugin-markdown-2-html'
@@ -11,33 +11,29 @@ export const pkgName = 'unplugin-markdown-2-html'
 export async function createMarkdownTransformer(options?: Options) {
   const render = await createMarkdownRender(options)
   return (markdown: string) => {
-    const { html, toc, meta, codeStyle } = render(markdown)
+    const { html, toc, meta, css } = render(markdown)
     const content = 
     `
 export const markdown = ${JSON.stringify(markdown)}
 export const html = ${JSON.stringify(html)}
 export const toc = ${JSON.stringify(toc)}
 export const meta = ${JSON.stringify(meta)}
+export const css = ${JSON.stringify(css)}
     `.trim()
-    return { content, codeStyle }
+    return content
   }
 }
 
 export async function createMarkdownRender(options?: Options) {
   const highlighter = await createHighlighter(options?.highlight)
-  const styleTokens: StyleToken[] = []
-  const highlight = (code: string, lang: string) => {
-    const highlighted = highlighter(code, lang)
-    styleTokens.push(highlighted.styleToken)
-    return highlighted.html
-  }
+  const themeTokens: ThemeToken[][] = []
+  let toc: string
+  let meta: Record<string, unknown>
   const markdownIt = new MakrdownIt({ 
     html: true,
     highlight,
     ...options?.markdown
   })
-  let toc: string
-  let meta: Record<string, unknown>
   markdownIt
     .use(markdownItAttrs)
     .use(markdownItToc, {
@@ -59,7 +55,38 @@ export async function createMarkdownRender(options?: Options) {
     
   return (markdown: string) => {
     const html = markdownIt.render(markdown)
-    return { markdown, html, toc, meta, styleTokens }
+    const mergedThemeTokens = mergeThemeTokens(themeTokens)
+    const css = generateCSS(mergedThemeTokens)
+    return { markdown, html, toc, meta, themeTokens, css }
+  }
+
+  function highlight (code: string, lang: string) {
+    const highlighted = highlighter(code, lang)
+    themeTokens.push(highlighted.themeTokens)
+    return highlighted.html
+  }
+
+  function mergeThemeTokens(themeTokens: ThemeToken[][]) {
+    const merged = themeTokens.flat().reduce((all, cur) => {
+      if(!all[cur.themeAlias]) {
+        all[cur.themeAlias] = cur
+      } else {
+        const tokenSet = new Set(all[cur.themeAlias].styleTokens.concat(cur.styleTokens))
+        all[cur.themeAlias].styleTokens = Array.from(tokenSet)
+      }
+      return all
+    }, {} as Record<string, ThemeToken>)
+    return merged
+  }
+
+  function generateCSS(themeTokenMap: Record<string, ThemeToken>) {
+    return Object.values(themeTokenMap).map(themeToken => {
+      return themeToken.styleTokens
+        .map(styleToken => themeToken.themeAlias === 'default'
+          ? `.${styleToken.className}{${styleToken.style}}`
+          : `.${themeToken.themeAlias} .${styleToken.className}{${styleToken.style}}`)
+        .join('')
+    }).join('')
   }
 }
 

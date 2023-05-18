@@ -1,4 +1,4 @@
-import { HighlighTheme, RemoteVSCodeThemeId, ShikiTheme, SpanToken } from '../types';
+import { HighlighTheme, RemoteVSCodeThemeId, ShikiTheme, ShikiThemeMap, StyleToken } from '../types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
@@ -8,23 +8,97 @@ import * as shiki from 'shiki'
 import path from 'path'
 import json5 from 'json5'
 import crypto from 'crypto'
+import { ThemeToken } from '../types';
 
-export async function createShikiHighlighter(theme: Theme | RemoteVSCodeThemeId) {
-  const highlighter = await getHighlighter({ langs: BUNDLED_LANGUAGES })
-  if(isBuiltinTheme(theme)) {
-    await highlighter.loadTheme(theme)
-  } else {
-    const themeJSON = await downloadVSCodeTheme(theme)
-    await highlighter.loadTheme(themeJSON)
+const explanationIdMap = new Map<string, string>()
+export async function createShikiHighlighter(options?: {
+  langs?: (shiki.ILanguageRegistration | shiki.Lang)[]
+  theme?: HighlighTheme
+}) {
+  const langs = options?.langs || BUNDLED_LANGUAGES
+  const themeMap: ShikiThemeMap = options?.theme
+    ? typeof options?.theme === 'string'
+      ? {default: options.theme}
+      : options.theme
+    : { default: 'vitesse-dark' }
+  
+  const builtinThemes = Object.values(themeMap).filter(theme => isBuiltinTheme(theme)) as Theme[]
+  const remoteThemes = Object.entries(themeMap).filter(([_themeAlias, theme]) => !isBuiltinTheme(theme)) as [string, RemoteVSCodeThemeId][]
+  const highlighter = await getHighlighter({ langs, themes: builtinThemes })
+  if(remoteThemes.length) {
+    await Promise.all(remoteThemes.map(async ([themeAlias, theme]) => {
+      const themeJSON = await downloadVSCodeTheme(theme)
+      themeJSON.name = themeAlias
+      await highlighter.loadTheme(themeJSON)
+    }))
   }
-  const themeName = isBuiltinTheme(theme) ? theme : theme.split('.')[2]
-  return (code: string, language?: string) => {
-    if(!language) {
-      return code
+
+  function highlight(code: string, lang?: string) {
+    if(!lang) {
+      return { html: code, themeTokens: [] as ThemeToken[] }
     }
-    const html = highlighter.codeToHtml(code, { lang: language, theme: themeName })
-    return html
+    const themeTokens = Object.entries(themeMap).map(([themeAlias, theme]) => ({
+      themeAlias,
+      theme,
+      ...highlightWithTheme(code, lang, isBuiltinTheme(theme) ? theme : themeAlias)
+    }))
+    const html = themeTokens[0].html
+    return { html, themeTokens }
   }
+
+  function highlightWithTheme(code: string, lang?: string, theme?: Theme | string) {
+    const styleTokens: StyleToken[] = []
+    let html = ''
+    const lineTokens = highlighter.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
+    lineTokens.forEach(lineToken => {
+      html += '<span class="line">'
+      lineToken.forEach(token => {
+        token.explanation!
+          .forEach(explanation => {
+            const explanationId = getExplanationId(explanation)
+            const className = 'sk-' + explanationId
+            html += `<span class="${className}">${escapeHTMLContent(explanation.content)}</span>`
+            const style = getTokenStyle(token)
+            styleTokens.push({className, style })
+          })
+      })
+      html += '</span>\n'
+    })
+    return { html, styleTokens }
+  }
+
+  function getTokenStyle(token: shiki.IThemedToken) {
+    const style = [
+      ['color', token.color],
+      ['font-weight', token.fontStyle === shiki.FontStyle.Bold ? 'bold' : null],
+      ['font-style', token.fontStyle === shiki.FontStyle.Italic ? 'italic' : null],
+      ['text-decoration', token.fontStyle === shiki.FontStyle.Underline ? 'underline' : null],
+    ]
+      .filter(t => t[1])
+      .map(t => t.join(':') + ';')
+      .join('')
+    return style
+  }
+
+  function getExplanationId(explanation: {scopes: Array<{scopeName: string}>}) {
+    const scopesName = explanation.scopes.map(scope => scope.scopeName).join('|')
+    if(explanationIdMap.has(scopesName)) {
+      return explanationIdMap.get(scopesName)
+    }
+    const explanationId = digest(scopesName)
+    explanationIdMap.set(scopesName, explanationId)
+    return explanationId
+  }
+
+  function digest(text: string) {
+    return crypto.createHash('shake256', { outputLength: 3}).update(text).digest('hex')
+  }
+
+  return highlight
+}
+
+function escapeHTMLContent(text: string) {
+  return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 export class ShikiHighlighter {
@@ -100,7 +174,7 @@ export class ShikiHighlighter {
   }
 
   render(code: string, lang: shiki.Lang, theme: ShikiTheme) {
-    const spanTokens: SpanToken[] = []
+    const spanTokens: StyleToken[] = []
     let html = ''
     const lineTokens = this.highlighter!.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
     lineTokens.forEach(lineToken => {

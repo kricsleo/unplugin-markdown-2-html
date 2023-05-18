@@ -1,11 +1,11 @@
 import highlightjs  from 'highlight.js';
-import { StyleToken } from '../types';
+import { ThemeToken } from '../types';
 
 export function highlightjsHighlighter(code: string, language?: string) {
   if(!language) {
-    return { html: code, styleTokens: [] as StyleToken[]}
+    return { html: code, themeTokens: [] as ThemeToken[]}
   }
   const html = highlightjs.highlight(code, { language, ignoreIllegals: true }).value
-  // todo: styleTokens
-  return {html, styleTokens: [] as StyleToken[]}
+  // todo: themeTokens
+  return {html, themeTokens: [] as ThemeToken[]}
 }
