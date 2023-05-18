@@ -3,7 +3,7 @@ import markdownItAnchor from 'markdown-it-anchor'
 import markdownItAttrs from 'markdown-it-attrs'
 import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
-import { Options } from './types'
+import { Options, StyleToken } from './types'
 import { createHighlighter } from './highlighter'
 
 export const pkgName = 'unplugin-markdown-2-html'
@@ -25,12 +25,11 @@ export const meta = ${JSON.stringify(meta)}
 
 export async function createMarkdownRender(options?: Options) {
   const highlighter = await createHighlighter(options?.highlight)
-  let codeStyle: string
-  const highlight = (code: string, lang: string,) => {
-    const highlighted =  highlighter(code, lang)
-    const { css, extractedCode } = extractStyle(highlighted)
-    codeStyle = css
-    return extractedCode
+  const styleTokens: StyleToken[] = []
+  const highlight = (code: string, lang: string) => {
+    const highlighted = highlighter(code, lang)
+    styleTokens.push(highlighted.styleToken)
+    return highlighted.html
   }
   const markdownIt = new MakrdownIt({ 
     html: true,
@@ -60,7 +59,7 @@ export async function createMarkdownRender(options?: Options) {
     
   return (markdown: string) => {
     const html = markdownIt.render(markdown)
-    return { markdown, html, toc, meta, codeStyle }
+    return { markdown, html, toc, meta, styleTokens }
   }
 }
 

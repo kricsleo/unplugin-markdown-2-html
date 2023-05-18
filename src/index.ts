@@ -4,10 +4,10 @@ import type { Options } from './types'
 
 export * from './helper'
 
-export default createUnplugin<Options | undefined>(options => {
+const unplugin = createUnplugin<Options | undefined>(options => {
   let style: string
   const markdownTransformer = createMarkdownTransformer(options)
-  return {
+  const plugin = {
     name: pkgName,
     resolveId(id) {
       return id.endsWith('unplugin-markdown-2-html.css') ? id: null
@@ -16,6 +16,7 @@ export default createUnplugin<Options | undefined>(options => {
       return id.endsWith('unplugin-markdown-2-html.css')
     },
     load(id: string) {
+      // todo: update virtual module
       return id.endsWith('unplugin-markdown-2-html.css') ? style : null
     },
     transformInclude(id: string) {
@@ -24,8 +25,12 @@ export default createUnplugin<Options | undefined>(options => {
     async transform(markdown: string,) {
       const transformer = await markdownTransformer
       const {content, codeStyle } = transformer(markdown)
-      style = codeStyle
+      style += codeStyle
+      console.log('unplugin', plugin)
       return content
     }
   }
+  return plugin
 })
+
+export default unplugin

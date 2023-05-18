@@ -6,8 +6,8 @@ import { createShikiHighlighter } from './shiki'
 export async function createHighlighter(options?: HighlightOptions) {
   let highlighter: Highlighter
   if(!options || options.shiki) {
-    const defaultTheme: ShikiTheme = 'vitesse-dark'
-    highlighter = await createShikiHighlighter(options?.shiki?.theme || defaultTheme)
+    const theme: ShikiTheme = options?.shiki?.theme || 'vitesse-dark'
+    highlighter = await createShikiHighlighter(theme)
   } else if(options.prismjs) {
     highlighter = prismjsHighlighter
   } else {

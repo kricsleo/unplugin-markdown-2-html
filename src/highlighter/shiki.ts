@@ -1,4 +1,4 @@
-import { HighlighTheme, RemoteVSCodeThemeId, ShikiTheme } from '../types';
+import { HighlighTheme, RemoteVSCodeThemeId, ShikiTheme, SpanToken } from '../types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
@@ -85,22 +85,22 @@ export class ShikiHighlighter {
       }))
     }
     const avaliableThemes = Array.from(new Set(Object.values(themes)))
-    const renderResults = avaliableThemes.map(t => ({theme: t, rendered: this.render(code, lang, t)}))
+    const renderResults = avaliableThemes.map(themeName => ({theme: themeName, rendered: this.render(code, lang, themeName)}))
     const html = renderResults[0]
-    const css = Object.entries(themes).map(([themeAlias, themeName]) => {
+    const styleTokens = Object.entries(themes).map(([themeAlias, themeName]) => {
       const themeResult = renderResults.find(result => result.theme === themeName)
-      return Object.entries(themeResult!.rendered.styles)
-          .map(([className, style]) => themeAlias === 'default' 
-            ? `.${className}{${style}}`
-            : `.${themeAlias} .${className}{${style}}`
-          )
-          .join('')
-    }).join('')
-    return { html, css }
+      const styleToken = {
+        theme: themeName,
+        themeAlias,
+        tokens: themeResult?.rendered.spanTokens
+      }
+      return styleToken;
+    })
+    return { html, styleTokens }
   }
 
   render(code: string, lang: shiki.Lang, theme: ShikiTheme) {
-    const styles: Record<string, string> = {}
+    const spanTokens: SpanToken[] = []
     let html = ''
     const lineTokens = this.highlighter!.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
     lineTokens.forEach(lineToken => {
@@ -111,12 +111,12 @@ export class ShikiHighlighter {
             const explanationId = ShikiHighlighter.getExplanationId(explanation)
             html += `<span class="${explanationId}">${explanation.content}</span>`
             const style = this.getTokenStyle(token)
-            styles[explanationId] = style
+            spanTokens.push({className: 'sk-' + explanationId, style })
           })
       })
       html += '</span>\n'
     })
-    return { html, styles }
+    return { html, spanTokens }
   }
 
   getTokenStyle(token: shiki.IThemedToken) {
