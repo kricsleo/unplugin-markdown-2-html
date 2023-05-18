@@ -11,7 +11,6 @@ console.log(html)
   <main class="prose px-50">
     <div v-html="html" />
     <div v-html="html2" />
-    {{ css }}
     <component is="style" v-html="css" />
     <component is="style" v-html="css2" />
   </main>

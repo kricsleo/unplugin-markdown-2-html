@@ -49,7 +49,9 @@ export async function createShikiHighlighter(options?: {
   function highlightWithTheme(code: string, lang?: string, theme?: Theme | string) {
     const styleTokens: StyleToken[] = []
     let html = ''
-    const lineTokens = highlighter.codeToThemedTokens(code, lang, theme, { includeExplanation: true })
+    const lineTokens = highlighter
+      .codeToThemedTokens(code, lang, theme, { includeExplanation: true })
+      .filter(lineToken => lineToken.length)
     lineTokens.forEach(lineToken => {
       html += '<span class="line">'
       lineToken.forEach(token => {
