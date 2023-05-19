@@ -141,7 +141,8 @@ function generateHTMLAndCSS(themeTokens: ThemeToken[]) {
       lineToken.map((token, tokenIdx) => {
         const tokenInDefaultTheme = defaultThemeToken.lineTokens[lineIdx][tokenIdx]
         const canOmitThemePrefix = themeToken.themeAlias === 'default' || token.style === tokenInDefaultTheme.style
-        const className = 'sk-' + digest(token.style!)
+        const scopeId = token.scopes?.map(scope => scope.scopeName).join('') || ''
+        const className = 'sk-' + digest(scopeId)
         const classText = canOmitThemePrefix
           ? `.${className}`
           : `.${themeToken.themeAlias} .${className}`

@@ -46,9 +46,9 @@ export async function createShikiHighlighter(options?: {
       ).map(lineToken => 
         lineToken.map(token => 
           token.explanation?.map(span => ({
-            content: span.content,
+            ...span,
             color: token.color, 
-            fontStyle: token.fontStyle 
+            fontStyle: token.fontStyle,
           }))
         ).flat()
       )

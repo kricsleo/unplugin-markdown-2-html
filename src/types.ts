@@ -49,6 +49,7 @@ export interface StyleToken {
 
 export interface SpanToken extends IThemedToken {
   style?: string
+  scopes?: Required<IThemedToken>['explanation']['0']['scopes']
 }
 
 export interface ThemeToken {
