@@ -18,8 +18,9 @@ export default defineConfig({
     Unocss(),
     unpluginMarkdown2Html({ 
       highlight: { shiki: { theme: {
-        default: 'material-theme-lighter',
+        default: 'light-plus',
         dark: 'kricsleo.gentle-clean.Gentle Clean Monokai',
+        // dark: 'hc_light',
       }}}
     })
   ],

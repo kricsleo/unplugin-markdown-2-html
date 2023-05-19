@@ -76,58 +76,44 @@ export async function createMarkdownRender(options?: Options) {
 }
 
 function mergeThemeTokens(themeTokens: ThemeToken[]) {
-  for(let themeIdx = 0; themeIdx < themeTokens.length; themeIdx++) {
-    const lineCount = themeTokens[themeIdx].lineTokens.length
-    for(let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
-      const lineToken = themeTokens[themeIdx].lineTokens[lineIdx]
-      const tokenCount = lineToken.length
-      for(let tokenIdx = 0; tokenIdx < tokenCount; tokenIdx++) {
-        const themeAlignTokens = themeTokens.map(themeToken => themeToken.lineTokens[lineIdx][tokenIdx])
-        const hasColor = themeAlignTokens.some(token => token.color)
-        const hasBold = themeAlignTokens.some(isBold)
-        const hasItalic = themeAlignTokens.some(isItalic)
-        const hasUnderline = themeAlignTokens.some(isUnderline)
-        themeAlignTokens.forEach(token => {
-          token.style = [
-            ['color', token.color || (hasColor ? 'inherit' : '')], 
-            ['font-weight', isBold(token) ? 'bold' : hasBold ? 'inherit' : '' ], 
-            ['font-style', isItalic(token) ? 'italic' : hasItalic ? 'inherit' : '' ], 
-            ['text-decoration', isUnderline(token) ? 'bold' : hasUnderline ? 'inherit' : '' ],
-          ]
-            .filter(kv => kv[1])
-            .map(kv => kv.join(':') + ';')
-            .join('')
-        })
+  const lineCount = themeTokens[0].lineTokens.length
+  for(let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+    const lineToken = themeTokens[0].lineTokens[lineIdx]
+    for(let tokenIdx = 0; tokenIdx < lineToken.length; tokenIdx++) {
+      const themeAlignTokens = themeTokens.map(themeToken => themeToken.lineTokens[lineIdx][tokenIdx])
+      const hasColor = themeAlignTokens.some(token => token.color)
+      const hasBold = themeAlignTokens.some(isBold)
+      const hasItalic = themeAlignTokens.some(isItalic)
+      const hasUnderline = themeAlignTokens.some(isUnderline)
+      themeAlignTokens.forEach(token => {
+        token.style = [
+          ['color', token.color || (hasColor ? 'inherit' : '')], 
+          ['font-weight', isBold(token) ? 'bold' : hasBold ? 'inherit' : '' ], 
+          ['font-style', isItalic(token) ? 'italic' : hasItalic ? 'inherit' : '' ], 
+          ['text-decoration', isUnderline(token) ? 'bold' : hasUnderline ? 'inherit' : '' ],
+        ]
+          .filter(kv => kv[1])
+          .map(kv => kv.join(':') + ';')
+          .join('')
+      })
 
-        const canMergeWithPrevToken = themeAlignTokens.every((token, idx) => {
-          const prevAlignToken = themeTokens[idx].lineTokens[lineIdx][tokenIdx - 1]
-          return prevAlignToken && prevAlignToken.style === token.style
-        })
-        if(canMergeWithPrevToken) {
-          const prevToken = themeTokens[themeIdx].lineTokens[lineIdx][tokenIdx - 1]
-          const curToken = themeTokens[themeIdx].lineTokens[lineIdx][tokenIdx]
+      const canMergeWithPrevToken = themeAlignTokens.every((token, idx) => {
+        const prevAlignToken = themeTokens[idx].lineTokens[lineIdx][tokenIdx - 1]
+        return prevAlignToken && prevAlignToken.style === token.style
+      })
+      if(canMergeWithPrevToken) {
+        themeTokens.forEach(themeToken => {
+          const lineToken = themeToken.lineTokens[lineIdx]
+          const prevToken = lineToken[tokenIdx - 1]
+          const curToken = lineToken[tokenIdx]
           const mergedToken = { 
             ...prevToken,
             content: prevToken.content + curToken.content
           }
-          lineToken.splice(tokenIdx, 1, mergedToken)
-        }
+          lineToken.splice(tokenIdx - 1, 2, mergedToken)
+        })
+        tokenIdx -= 1
       }
-      // const mergedLineTokens = lineToken.reduce((mergedLineToken, token) => {
-      //   const lastToken = mergedLineToken[mergedLineToken.length - 1]
-      //   const canMerge = lastToken?.style === token.style
-      //   if(canMerge) {
-      //     const mergedToken = { 
-      //       ...lastToken, 
-      //       content: lastToken.content + token.content 
-      //     }
-      //     mergedLineToken.splice(mergedLineToken.length - 1, 1, mergedToken)
-      //   } else {
-      //     mergedLineToken.push(token)
-      //   }
-      //   return mergedLineToken
-      // }, [] as SpanToken[])
-      // themeTokens[themeIdx].lineTokens[lineIdx] = mergedLineTokens
     }
   }
 }

@@ -5,16 +5,9 @@ likes: 100
 
 # h1 
 
-```ts
-export interface Foo {
-  bar: string
-}
-```
 
-```ts
-export interface Baz {
-  qux: number
-}
+```html
+<div>hi</div>
 ```
 
 # h2
