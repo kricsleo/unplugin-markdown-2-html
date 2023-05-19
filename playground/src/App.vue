@@ -13,8 +13,8 @@ import '@kricsleo/markdown-themes/dist/prose.css'
       <button text-30px cursor-pointer i-carbon:sun dark:i-carbon:moon @click="toggleDark()" />
     </div>
     <div v-html="html" />
-    <div v-html="html2" />
     <component is="style" v-html="css" />
-    <component is="style" v-html="css2" />
+    <!-- <div v-html="html2" />
+    <component is="style" v-html="css2" /> -->
   </main>
 </template>

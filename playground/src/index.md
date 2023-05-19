@@ -6,9 +6,7 @@ likes: 100
 # h1 
 
 ```ts
-export interface Person {
-  name: string
-}
+let a
 ```
 
 # h2

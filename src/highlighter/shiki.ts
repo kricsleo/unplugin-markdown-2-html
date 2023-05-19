@@ -33,17 +33,15 @@ export async function createShikiHighlighter(options?: {
     }))
   }
 
-  function highlight(code: string, lang?: string) {
-    if(!lang) {
-      return { html: code, themeTokens: [] as ThemeToken[] }
-    }
+  function highlightToThemedTokens(code: string, lang?: string) {
     const themeTokens = Object.entries(themeMap).map(([themeAlias, theme]) => ({
       themeAlias,
       theme,
-      ...highlightWithTheme(code, lang, isBuiltinTheme(theme) ? theme : themeAlias)
+      lineTokens: lang 
+        ? highlighter.codeToThemedTokens(code, lang, isBuiltinTheme(theme) ? theme : themeAlias)
+        : [[{content: code}]]
     }))
-    const html = themeTokens[0].html
-    return { html, themeTokens }
+    return themeTokens
   }
 
   function highlightWithTheme(code: string, lang?: string, theme?: Theme | string) {
@@ -94,7 +92,7 @@ export async function createShikiHighlighter(options?: {
     return crypto.createHash('shake256', { outputLength: 3}).update(text).digest('hex')
   }
 
-  return highlight
+  return highlightToThemedTokens
 }
 
 function escapeHTML(text: string) {

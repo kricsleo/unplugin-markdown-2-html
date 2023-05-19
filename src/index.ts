@@ -5,7 +5,6 @@ import type { Options } from './types'
 export * from './helper'
 
 const unplugin = createUnplugin<Options | undefined>(options => {
-  let style: string
   const markdownTransformer = createMarkdownTransformer(options)
   const plugin = {
     name: pkgName,

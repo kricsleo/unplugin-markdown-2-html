@@ -1,7 +1,7 @@
 import { Options as MarkdownItOptions } from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
 import { TocOptions } from 'markdown-it-toc-done-right'
-import { Theme } from 'shiki'
+import { IThemedToken, Theme } from 'shiki'
 
 export interface Options {
   /** @see https://github.com/markdown-it/markdown-it#init-with-presets-and-options */
@@ -46,8 +46,13 @@ export interface StyleToken {
     'text-decoration'?: string
   }
 }
+
+export interface SpanToken extends IThemedToken {
+  style?: string
+}
+
 export interface ThemeToken {
   theme: string
   themeAlias: string
-  styleTokens: StyleToken[]
+  lineTokens: SpanToken[][]
 }
