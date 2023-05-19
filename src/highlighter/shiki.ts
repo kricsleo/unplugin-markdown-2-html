@@ -34,13 +34,26 @@ export async function createShikiHighlighter(options?: {
   }
 
   function highlightToThemedTokens(code: string, lang?: string) {
-    const themeTokens = Object.entries(themeMap).map(([themeAlias, theme]) => ({
-      themeAlias,
-      theme,
-      lineTokens: lang 
-        ? highlighter.codeToThemedTokens(code, lang, isBuiltinTheme(theme) ? theme : themeAlias)
-        : [[{content: code}]]
-    }))
+    const themeTokens = Object.entries(themeMap).map(([themeAlias, theme]) => {
+      if(!lang) {
+        return { theme, themeAlias, lineTokens: [[{ content: code }]] } as ThemeToken
+      }
+      const lineTokens = highlighter.codeToThemedTokens(
+        code, 
+        lang, 
+        isBuiltinTheme(theme) ? theme : themeAlias,
+        { includeExplanation: true }
+      ).map(lineToken => 
+        lineToken.map(token => 
+          token.explanation?.map(span => ({
+            content: span.content,
+            color: token.color, 
+            fontStyle: token.fontStyle 
+          }))
+        ).flat()
+      )
+      return { theme, themeAlias, lineTokens } as ThemeToken
+    })
     return themeTokens
   }
 
