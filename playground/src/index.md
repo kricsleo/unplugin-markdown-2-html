@@ -6,7 +6,17 @@ likes: 100
 # h1 
 
 ```ts
-let a
+export interface Person {
+  name: string
+}
+
+const shiki = require('shiki')
+
+shiki.getHighlighter({
+  theme: 'nord'
+}).then(highlighter => {
+  console.log(highlighter.codeToHtml(`console.log('shiki');`, { lang: 'js' }))
+})
 ```
 
 # h2

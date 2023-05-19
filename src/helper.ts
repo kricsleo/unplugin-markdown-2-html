@@ -60,7 +60,9 @@ export async function createMarkdownRender(options?: Options) {
   return (markdown: string) => {
     highlightStyleMap.clear()
     const html = markdownIt.render(markdown)
-    const css = Object.entries(highlightStyleMap).map(([classText, style]) => `${classText}{${style}}`)
+    const css = [...highlightStyleMap.entries()]
+      .map(([classText, style]) => `${classText}{${style}}`)
+      .join('')
     return { markdown, html, toc, meta, css }
   }
 
@@ -141,8 +143,8 @@ function generateHTMLAndCSS(themeTokens: ThemeToken[]) {
         const canOmitThemePrefix = themeToken.themeAlias === 'default' || token.style === tokenInDefaultTheme.style
         const className = 'sk-' + digest(token.style!)
         const classText = canOmitThemePrefix
-          ? `.${className}{${token.style}}`
-          : `.${themeToken.themeAlias} .${className}{${token.style}}`
+          ? `.${className}`
+          : `.${themeToken.themeAlias} .${className}`
         styleMap[classText] = token.style!
         return `<span class="${className}">${escapeHtml(token.content)}</span>`
       }).join('')
