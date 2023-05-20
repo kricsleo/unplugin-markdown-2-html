@@ -66,8 +66,9 @@ export async function createMarkdownRender(options?: Options) {
     return { markdown, html, toc, meta, css }
   }
 
-  function highlight (code: string, lang: string) {
-    const themeTokens = highlighter(code, lang)
+  function highlight(code: string, lang: string) {
+    // Trim the extra `/n` at the end
+    const themeTokens = highlighter(code.replace(/\n$/, ''), lang)
     mergeThemeTokens(themeTokens)
     const { html, styleMap } = generateHTMLAndCSS(themeTokens)
     Object.entries(styleMap).forEach(([k, v]) => highlightStyleMap.set(k, v))
@@ -135,8 +136,8 @@ function generateHTMLAndCSS(themeTokens: ThemeToken[]) {
         styleMap[classText] = token.style!
         return `<span class="${className}">${escapeHtml(token.content)}</span>`
       }).join('')
-      + '</span>'
-    ).join('\r')
+      + '\n</span>'
+    ).join('')
   )[0]
   // const css = Object.entries(styleMap).map(([classText, style]) => `${classText}{${style}}`)
   return { html, styleMap }

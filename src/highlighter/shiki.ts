@@ -36,14 +36,19 @@ export async function createShikiHighlighter(options?: {
   function highlightToThemedTokens(code: string, lang?: string) {
     const themeTokens = Object.entries(themeMap).map(([themeAlias, theme]) => {
       if(!lang) {
-        return { theme, themeAlias, lineTokens: [[{ content: code }]] } as ThemeToken
+        return { theme, themeAlias, lineTokens: renderPlain(code) }
       }
-      const lineTokens = highlighter.codeToThemedTokens(
+      if(!highlighter.getLoadedLanguages().includes(lang as shiki.Lang)) {
+        console.warn(`No language registration for \`lang\`, skipping highlight.`)
+        return { theme, themeAlias, lineTokens: renderPlain(code) }
+      }
+      const themedTokens = highlighter.codeToThemedTokens(
         code, 
         lang, 
         isBuiltinTheme(theme) ? theme : themeAlias,
         { includeExplanation: true }
-      ).map(lineToken => 
+      )
+      const lineTokens = themedTokens.map(lineToken => 
         lineToken.map(token => 
           token.explanation?.map(span => ({
             ...span,
@@ -78,6 +83,11 @@ export async function createShikiHighlighter(options?: {
       html += '</span>\n'
     })
     return { html, styleTokens }
+  }
+
+  function renderPlain(code: string) {
+    const lines = code.split(/\r\n|\r|\n/);
+    return lines.map(line => [{ content: line }]);
   }
 
   function getTokenStyle(token: shiki.IThemedToken) {

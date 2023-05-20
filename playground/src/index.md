@@ -6,8 +6,26 @@ likes: 100
 # h1 
 
 
-```html
+```
+
 <div>hi</div>
+
+<div>hi</div>
+
+
+```
+
+```html
+
+<div>hi</div>
+
+<div>hi</div>
+
+```
+
+
+```html
+<div>hello</div>
 ```
 
 # h2
