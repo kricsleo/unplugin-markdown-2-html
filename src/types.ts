@@ -33,9 +33,9 @@ export type Highlighter = (code: string, language?: string) => { html: string; t
 export type VSCodeExtensionId = `${string}.${string}`
 export type RemoteVSCodeThemeId = `${VSCodeExtensionId}.${string}`
 export type ShikiTheme = Theme | RemoteVSCodeThemeId
-export type ShikiThemeMap = ({ default?: ShikiTheme } & Record<string, ShikiTheme>)
+export type HighlighThemes = { default?: ShikiTheme } & Record<string, ShikiTheme>
 
-export type HighlighTheme = ShikiTheme | ShikiThemeMap
+export type HighlighTheme = ShikiTheme | HighlighThemes
 
 export interface StyleToken {
   className: string
@@ -49,11 +49,24 @@ export interface StyleToken {
 
 export interface SpanToken extends IThemedToken {
   style?: string
-  scopes?: Required<IThemedToken>['explanation']['0']['scopes']
 }
 
-export interface ThemeToken {
+export interface HighlightThemeToken {
   theme: string
   themeAlias: string
-  lineTokens: SpanToken[][]
+  lines: HighlightThemeSpan[][]
+}
+
+export interface ShikiThemeLine {
+  themeAlias: string
+  spans: IThemedToken[]
+}
+export type HighlightThemeLine = {
+  themeAlias: string
+  spans: HighlightThemeSpan[]
+}
+
+export interface HighlightThemeSpan {
+  content: string
+  style?: Record<string, Pick<IThemedToken, 'color' | 'fontStyle'>>
 }
