@@ -108,9 +108,13 @@ function generateSpanCSS(span: HightlightSpan) {
   })
   const key = themeStyles.map(themeStyle => themeStyle.css).join('')
   const className = 'sk-' + hash(key)
-  const css = themeStyles.map(themeStyle => themeStyle.themeAlias === 'default'
-    ? `.${className}{${themeStyle.css}}`
-    : `.${themeStyle.themeAlias} .${className}{${themeStyle.css}}`
+  const defaultThemeStyle = themeStyles.find(themeStyle => themeStyle.themeAlias === 'default')!
+  const css = themeStyles.map(themeStyle => 
+    themeStyle.themeAlias === 'default'
+      ? `.${className}{${themeStyle.css}}`
+      : themeStyle.css === defaultThemeStyle.css
+        ? '' 
+        : `.${themeStyle.themeAlias} .${className}{${themeStyle.css}}`
   ).join('')
   return { className, css }
 }

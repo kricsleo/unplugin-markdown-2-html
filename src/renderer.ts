@@ -5,7 +5,7 @@ import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
 import { Lang } from 'shiki-es'
 import { HightlightSpan, Options } from './types'
-import { createHighlighter, linesToCSS } from './highlighter'
+import { createHighlighter, linesToCSS } from './highlighter/highlighter'
 
 export async function createMarkdownTransformer(options?: Options) {
   const render = await createMarkdownRender(options)

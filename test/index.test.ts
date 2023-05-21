@@ -1,5 +1,5 @@
 import { test, expect, it, describe } from 'vitest'
-import { customRender, multiThemeRender } from '../src/highlighter'
+import { customRender, multiThemeRender } from '../src/highlighter/highlighter'
 // import markdownRaw from '../playground/index.md?raw'
 // import { transformMarkdown } from '../src/helper'
 
