@@ -1,18 +1,214 @@
-import { HighlightOptions, ShikiTheme, Highlighter } from '../types'
-import { highlightjsHighlighter } from './highlightjs'
-import { prismjsHighlighter } from './prismjs'
-import { createShikiHighlighter } from './shiki'
+import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES, FontStyle, Lang } from 'shiki-es'
+import { escapeHtml } from 'markdown-it/lib/common/utils';
+import { HighlighTheme, HighlightOptions, HighlightThemeName, HightlightSpan, HightlightSpanThemeStyle, VSCodeTheme } from '../types'
+import { downloadVSCodeTheme } from './theme'
 
 export async function createHighlighter(options?: HighlightOptions) {
-  // let highlighter: Highlighter
-  // if(!options || options.shiki) {
-  //   const theme: ShikiTheme = options?.shiki?.theme || 'vitesse-dark'
-  //   highlighter = await createShikiHighlighter(options?.shiki)
-  // } else if(options.prismjs) {
-  //   highlighter = prismjsHighlighter
-  // } else {
-  //   highlighter = highlightjsHighlighter
-  // }
-  // return highlighter
-  return createShikiHighlighter(options?.shiki)
+  const langs = options?.langs || BUNDLED_LANGUAGES
+  const themes = resolveTheme(options?.theme)
+  
+  const builtinThemes = Object.values(themes).filter(theme => isBuiltinTheme(theme as HighlightThemeName)) as Theme[]
+  const vscodeThemes = Object.values(themes).filter(theme => !isBuiltinTheme(theme as HighlightThemeName)) as VSCodeTheme[]
+  const highlighter = await getHighlighter({ langs, themes: builtinThemes })
+  if(vscodeThemes.length) {
+    await Promise.all(vscodeThemes.map(async theme => {
+      const themeJSON = await downloadVSCodeTheme(theme)
+      themeJSON.name = theme
+      await highlighter.loadTheme(themeJSON)
+    }))
+  }
+  return highlight
+
+  function highlight(code: string, lang?: string) {
+    const lines = highlightToLines(code, lang)
+    const css = linesToCSS(lines)
+    const html = linesToHtml(lines)
+    return { html, css, lines }
+  }
+
+  function highlightToLines(code: string, lang?: string): HightlightSpan[][] {
+    if(!lang) {
+      return highlightToPlainLines(code)
+    }
+    if(!highlighter.getLoadedLanguages().includes(lang as Lang)) {
+      console.warn(`No language registration for \`lang\`, skipping highlight.`)
+      return highlightToPlainLines(code)
+    }
+    const themeLines = Object.entries(themes).map(([themeAlias, theme]) => {
+      const lines: HightlightSpan[][] = highlighter.codeToThemedTokens(
+        code, 
+        lang,
+        theme,
+        { includeExplanation: false }
+      ).map(line => line.map(span => ({
+        content: span.content,
+        style: {
+          [themeAlias]: {
+            color: span.color,
+            fontStyle: span.fontStyle
+          },
+        }
+      })))
+      return { theme, themeAlias, lines }
+    })
+
+    const mergedLines: HightlightSpan[][] = []
+    for (const line in themeLines[0].lines) {
+      mergedLines[line] = themeLines.reduce((acc, themeLine) => {
+        return mergeLines({
+          themeAlias: themeLines[0].themeAlias,
+          spans: acc
+        }, {
+          themeAlias: themeLine.themeAlias,
+          spans: themeLine.lines[line]
+        })
+      }, themeLines[0].lines[line])
+    }
+    return mergedLines
+  }
+}
+
+function linesToHtml(lines: HightlightSpan[][]) {
+  const html = lines.map(line => 
+    '<span class="line">' +
+    line.map(span => {
+      const { className } = generateSpanCSS(span)
+      return `<span class="${className}">${escapeHtml(span.content)}</span>`
+    }).join('') +
+    '\n</span>'
+  ).join('')
+  return html
+}
+
+export function linesToCSS(lines: HightlightSpan[][]) {
+  return unique(lines.flat().map(span => generateSpanCSS(span).css))
+    .join('')
+}
+
+function generateSpanCSS(span: HightlightSpan) {
+  if(!span.style) {
+    return { className: '', css: ''}
+  }
+  const styles = Object.values(span.style)
+  const hasColor = styles.some(style => style.color)
+  const hasBold = styles.some(isBold)
+  const hasItalic = styles.some(isItalic)
+  const hasUnderline = styles.some(isUnderline)
+  const themeStyles = Object.entries(span.style).map(([themeAlias, style]) => {
+    const css = [
+      ['color', style.color || (hasColor ? 'inherit' : '')], 
+      ['font-weight', isBold(style) ? 'bold' : hasBold ? 'inherit' : '' ], 
+      ['font-style', isItalic(style) ? 'italic' : hasItalic ? 'inherit' : '' ], 
+      ['text-decoration', isUnderline(style) ? 'bold' : hasUnderline ? 'inherit' : '' ],
+    ]
+      .filter(kv => kv[1])
+      .map(kv => kv.join(':') + ';')
+      .join('')
+    return { themeAlias, css }
+  })
+  const key = themeStyles.map(themeStyle => themeStyle.css).join('')
+  const className = 'sk-' + hash(key)
+  const css = themeStyles.map(themeStyle => themeStyle.themeAlias === 'default'
+    ? `.${className}{${themeStyle.css}}`
+    : `.${themeStyle.themeAlias} .${className}{${themeStyle.css}}`
+  ).join('')
+  return { className, css }
+}
+
+
+interface HighlightThemeLine {
+  themeAlias: string
+  spans: HightlightSpan[]
+}
+function mergeLines(line1: HighlightThemeLine, line2: HighlightThemeLine) {
+  const mergedLine: HightlightSpan[] = []
+  const right = {
+    themeAlias: line1.themeAlias,
+    spans: line1.spans.slice()
+  }
+  const left = {
+    themeAlias: line2.themeAlias,
+    spans: line2.spans.slice()
+  }
+  let index = 0
+  while (index < right.spans.length) {
+    const rightToken = right.spans[index]
+    const leftToken = left.spans[index]
+
+    if (rightToken.content === leftToken.content) {
+      mergedLine.push({
+        content: rightToken.content,
+        style: {
+          ...right.spans[index].style,
+          ...left.spans[index].style,
+        }
+      })
+      index += 1
+      continue
+    }
+
+    if (rightToken.content.startsWith(leftToken.content)) {
+      const nextRightToken = {
+        ...rightToken,
+        content: rightToken.content.slice(leftToken.content.length)
+      }
+      rightToken.content = leftToken.content
+      right.spans.splice(index + 1, 0, nextRightToken)
+      continue
+    }
+
+    if (leftToken.content.startsWith(rightToken.content)) {
+      const nextLeftToken = {
+        ...leftToken,
+        content: leftToken.content.slice(rightToken.content.length)
+      }
+      leftToken.content = rightToken.content
+      left.spans.splice(index + 1, 0, nextLeftToken)
+      continue
+    }
+    throw new Error('Unexpected token')
+  }
+  return mergedLine
+}
+
+function highlightToPlainLines(code: string) {
+  const lines = code.split(/\r\n|\r|\n/);
+  return lines.map(line => [{ content: line }]);
+}
+
+function resolveTheme(theme?: HighlighTheme) {
+  const themes = theme
+    ? typeof theme === 'string'
+      ? {default: theme}
+      : theme
+    : { default: 'vitesse-dark' }
+  return themes
+}
+
+function isBuiltinTheme(theme: HighlightThemeName): theme is Theme {
+  return BUNDLED_THEMES.includes(theme as any)
+}
+
+function isBold(style: HightlightSpanThemeStyle) {
+  return style.fontStyle === FontStyle.Bold
+}
+
+function isItalic(style: HightlightSpanThemeStyle) {
+  return style.fontStyle === FontStyle.Italic
+}
+
+function isUnderline(style: HightlightSpanThemeStyle) {
+  return style.fontStyle === FontStyle.Underline
+}
+
+function unique(list: unknown[]) {
+  return Array.from(new Set(list))
+}
+
+// https://gist.github.com/hyamamoto/fd435505d29ebfa3d9716fd2be8d42f0?permalink_comment_id=4261728#gistcomment-4261728
+function hash(str: string) {
+  return Array.from(str)
+    .reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0)
+    .toString()
+    .slice(0, 6)
 }
