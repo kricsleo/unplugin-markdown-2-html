@@ -214,5 +214,5 @@ function hash(str: string) {
   return Array.from(str)
     .reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0)
     .toString()
-    .slice(0, 6)
+    .slice(-6)
 }
