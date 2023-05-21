@@ -1,4 +1,4 @@
-import { HighlighTheme, HighlighThemes, HighlightThemeLine, HighlightThemeSpan, HighlightThemeToken, RemoteVSCodeThemeId, ShikiTheme, ShikiThemeLine, ShikiThemeMap, StyleToken } from '../types';
+import { HighlighTheme, HighlighThemes, HighlightThemeLine, HighlightThemeSpan, HighlightThemeSpanStyle, HighlightThemeToken, HighlightTokenStyle, RemoteVSCodeThemeId, ShikiTheme, ShikiThemeLine, ShikiThemeMap, StyleToken } from '../types';
 import fetch from 'node-fetch'
 import stream from 'stream'
 import unzipper from 'unzipper'
@@ -8,6 +8,7 @@ import * as shiki from 'shiki'
 import path from 'path'
 import json5 from 'json5'
 import crypto from 'crypto'
+import { escapeHtml } from 'markdown-it/lib/common/utils';
 
 export async function createShikiHighlighter(options?: {
   langs?: (shiki.ILanguageRegistration | shiki.Lang)[]
@@ -27,7 +28,14 @@ export async function createShikiHighlighter(options?: {
     }))
   }
 
-  function highlight(code: string, lang?: shiki.Lang): HighlightThemeSpan[][] {
+  function highlight(code: string, lang?: shiki.Lang) {
+    const lines = toLines(code, lang)
+    const css = toCSS(lines)
+    const html = toHtml(lines)
+    return { html, css, lines }
+  }
+
+  function toLines(code: string, lang?: shiki.Lang): HighlightThemeSpan[][] {
     if(!lang) {
       return codeToPlainTokens(code)
     }
@@ -65,7 +73,6 @@ export async function createShikiHighlighter(options?: {
         })
       }, themeTokens[0].lines[line])
     }
-
     return mergedLines
   }
 
@@ -96,6 +103,54 @@ export async function createShikiHighlighter(options?: {
 
   return highlight
 }
+
+function toHtml(lines: HighlightThemeSpan[][]) {
+  const html = lines.map(line => 
+    '<span class="line">' +
+    line.map(span => {
+      const { className } = getSpanCSS(span)
+      return `<span class="${className}">${escapeHtml(span.content)}</span>`
+    }).join('') +
+    '\n</span>'
+  ).join('')
+  return html
+}
+
+export function toCSS(lines: HighlightThemeSpan[][]) {
+  return unique(lines.flat().map(span => getSpanCSS(span).css))
+    .join('')
+}
+
+function getSpanCSS(span: HighlightThemeSpan) {
+  if(!span.style) {
+    return { className: '', css: ''}
+  }
+  const styleOptions = Object.values(span.style)
+  const hasColor = styleOptions.some(token => token.color)
+  const hasBold = styleOptions.some(isBold)
+  const hasItalic = styleOptions.some(isItalic)
+  const hasUnderline = styleOptions.some(isUnderline)
+  const themeStyles = Object.entries(span.style).map(([themeAlias, styleOption]) => {
+    const style = [
+      ['color', styleOption.color || (hasColor ? 'inherit' : '')], 
+      ['font-weight', isBold(styleOption) ? 'bold' : hasBold ? 'inherit' : '' ], 
+      ['font-style', isItalic(styleOption) ? 'italic' : hasItalic ? 'inherit' : '' ], 
+      ['text-decoration', isUnderline(styleOption) ? 'bold' : hasUnderline ? 'inherit' : '' ],
+    ]
+      .filter(kv => kv[1])
+      .map(kv => kv.join(':') + ';')
+      .join('')
+    return { themeAlias, style }
+  })
+  const className = 'sk-' + digest(JSON.stringify(themeStyles))
+  const css = themeStyles.map(themeStyle => themeStyle.themeAlias === 'default'
+    ? `.${className}{${themeStyle.style}}`
+    : `.${themeStyle.themeAlias} .${className}{${themeStyle.style}}`
+  ).join('')
+  return { className, css }
+}
+
+
 
 function highlightToThemeTokens(
   highlighter: shiki.Highlighter, 
@@ -172,16 +227,16 @@ function mergeLines(line1: HighlightThemeLine, line2: HighlightThemeLine) {
 }
 
 
-function getSpanStyle(token: shiki.IThemedToken) {
-  const style: Record<string, string | undefined> = {
-    color: token.color,
-    'font-weight': token.fontStyle === shiki.FontStyle.Bold ? 'bold' : undefined,
-    'font-style': token.fontStyle === shiki.FontStyle.Italic ? 'italic' : undefined,
-    'text-decoration': token.fontStyle === shiki.FontStyle.Underline ? 'underline' : undefined
-  }
-  Object.keys(style).forEach(attr => !style[attr] && (delete style[attr]))
-  return Object.keys(style).length ? style : undefined
-}
+// function getSpanStyle(token: shiki.IThemedToken) {
+//   const style: Record<string, string | undefined> = {
+//     color: token.color,
+//     'font-weight': token.fontStyle === shiki.FontStyle.Bold ? 'bold' : undefined,
+//     'font-style': token.fontStyle === shiki.FontStyle.Italic ? 'italic' : undefined,
+//     'text-decoration': token.fontStyle === shiki.FontStyle.Underline ? 'underline' : undefined
+//   }
+//   Object.keys(style).forEach(attr => !style[attr] && (delete style[attr]))
+//   return Object.keys(style).length ? style : undefined
+// }
 
 function codeToPlainTokens(code: string) {
   const lines = code.split(/\r\n|\r|\n/);
@@ -270,6 +325,22 @@ function isBuiltinTheme(theme: Theme | RemoteVSCodeThemeId): theme is Theme {
 
 function isBuiltinLang(lang: shiki.Lang): lang is shiki.Lang {
   return shiki.BUNDLED_LANGUAGES.some(langRegistration => langRegistration.id === lang)
+}
+
+function isBold(style: HighlightTokenStyle) {
+  return style.fontStyle === shiki.FontStyle.Bold
+}
+
+function isItalic(style: HighlightTokenStyle) {
+  return style.fontStyle === shiki.FontStyle.Italic
+}
+
+function isUnderline(style: HighlightTokenStyle) {
+  return style.fontStyle === shiki.FontStyle.Underline
+}
+
+function unique(list: unknown[]) {
+  return Array.from(new Set(list))
 }
 
 interface VSCodeThemePkgJSON {

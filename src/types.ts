@@ -65,8 +65,8 @@ export type HighlightThemeLine = {
   themeAlias: string
   spans: HighlightThemeSpan[]
 }
-
+export type HighlightTokenStyle = Pick<IThemedToken, 'color' | 'fontStyle'>
 export interface HighlightThemeSpan {
   content: string
-  style?: Record<string, Pick<IThemedToken, 'color' | 'fontStyle'>>
+  style?: Record<string, HighlightTokenStyle>
 }

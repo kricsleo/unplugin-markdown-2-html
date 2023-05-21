@@ -3,12 +3,13 @@ import markdownItAnchor from 'markdown-it-anchor'
 import markdownItAttrs from 'markdown-it-attrs'
 import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
-import { Options, StyleToken, ThemeToken } from './types'
+import { HighlightThemeSpan, Options, StyleToken, ThemeToken } from './types'
 import { createHighlighter } from './highlighter'
-import { FontStyle, IThemedToken } from 'shiki'
+import { FontStyle, IThemedToken, Lang } from 'shiki'
 import { SpanToken } from './types'
 import crypto from 'crypto'
 import { escapeHtml } from 'markdown-it/lib/common/utils'
+import { toCSS } from './highlighter/shiki'
 
 export const pkgName = 'unplugin-markdown-2-html'
 
@@ -30,7 +31,7 @@ export const css = ${JSON.stringify(css)}
 
 export async function createMarkdownRender(options?: Options) {
   const highlighter = await createHighlighter(options?.highlight)
-  const highlightStyleMap: Map<string, string> = new Map()
+  const lines: HighlightThemeSpan[][] = []
   let toc: string
   let meta: Record<string, unknown>
   const markdownIt = new MakrdownIt({ 
@@ -58,21 +59,17 @@ export async function createMarkdownRender(options?: Options) {
     } as MarkdownItMetaYamlOptions)
     
   return (markdown: string) => {
-    highlightStyleMap.clear()
+    lines.length = 0
     const html = markdownIt.render(markdown)
-    const css = [...highlightStyleMap.entries()]
-      .map(([classText, style]) => `${classText}{${style}}`)
-      .join('')
+    const css = toCSS(lines)
     return { markdown, html, toc, meta, css }
   }
 
   function highlight(code: string, lang: string) {
     // Trim the extra `/n` at the end
-    const themeTokens = highlighter(code.replace(/\n$/, ''), lang)
-    mergeThemeTokens(themeTokens)
-    const { html, styleMap } = generateHTMLAndCSS(themeTokens)
-    Object.entries(styleMap).forEach(([k, v]) => highlightStyleMap.set(k, v))
-    return html
+    const result = highlighter(code.replace(/\n$/, ''), lang as Lang)
+    lines.push(...result.lines)
+    return result.html
   }
 }
 

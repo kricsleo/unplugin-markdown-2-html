@@ -25,7 +25,7 @@ likes: 100
 
 
 ```html
-<div>hello</div>
+<span>hello</span>
 ```
 
 # h2
