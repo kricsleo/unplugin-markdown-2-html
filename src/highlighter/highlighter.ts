@@ -71,7 +71,7 @@ export async function createHighlighter(options?: HighlightOptions) {
 
   function generateWrapperCSS() {
     const defaultThemeBg = highlighter.getBackgroundColor(themes.default)
-    Object.entries(themes).map(([themeAlias, theme]) => {
+    const wrapperCss = Object.entries(themes).map(([themeAlias, theme]) => {
       const bg = highlighter.getBackgroundColor(theme)
       return themeAlias === 'default' 
         ? `.${wrapperClassName}{background-color: ${bg};}`
@@ -79,6 +79,7 @@ export async function createHighlighter(options?: HighlightOptions) {
           ? ''
           : `.${themeAlias} .${wrapperClassName}{background-color: ${bg};}`
     }).join('')
+    return wrapperCss
   }
 }
 
