@@ -1,7 +1,9 @@
-import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES, FontStyle, Lang } from 'shiki-es'
+import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES, FontStyle, Lang, Highlighter } from 'shiki-es'
 import { escapeHtml } from 'markdown-it/lib/common/utils';
 import { HighlighTheme, HighlightOptions, HighlightThemeName, HightlightSpan, HightlightSpanThemeStyle, VSCodeTheme } from '../types'
 import { downloadVSCodeTheme } from './theme'
+
+const wrapperClassName = 'sk-199507'
 
 export async function createHighlighter(options?: HighlightOptions) {
   const langs = options?.langs || BUNDLED_LANGUAGES
@@ -17,7 +19,7 @@ export async function createHighlighter(options?: HighlightOptions) {
       await highlighter.loadTheme(themeJSON)
     }))
   }
-  return highlight
+  return { highlight, generateWrapperCSS }
 
   function highlight(code: string, lang?: string) {
     const lines = highlightToLines(code, lang)
@@ -66,6 +68,18 @@ export async function createHighlighter(options?: HighlightOptions) {
     }
     return mergedLines
   }
+
+  function generateWrapperCSS() {
+    const defaultThemeBg = highlighter.getBackgroundColor(themes.default)
+    Object.entries(themes).map(([themeAlias, theme]) => {
+      const bg = highlighter.getBackgroundColor(theme)
+      return themeAlias === 'default' 
+        ? `.${wrapperClassName}{background-color: ${bg};}`
+        : bg === defaultThemeBg 
+          ? ''
+          : `.${themeAlias} .${wrapperClassName}{background-color: ${bg};}`
+    }).join('')
+  }
 }
 
 function linesToHtml(lines: HightlightSpan[][]) {
@@ -77,7 +91,7 @@ function linesToHtml(lines: HightlightSpan[][]) {
     }).join('') +
     '\n</span>'
   ).join('')
-  return html
+  return `<pre class="${wrapperClassName}"><code>${html}</code></pre>`
 }
 
 export function linesToCSS(lines: HightlightSpan[][]) {

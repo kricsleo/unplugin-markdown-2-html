@@ -5,7 +5,7 @@ import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
 import { Lang } from 'shiki-es'
 import { HightlightSpan, Options } from './types'
-import { createHighlighter, linesToCSS } from './highlighter/highlighter'
+import { createHighlighter, generateWrapperCSS, linesToCSS } from './highlighter/highlighter'
 
 export async function createMarkdownTransformer(options?: Options) {
   const render = await createMarkdownRender(options)
@@ -56,13 +56,14 @@ export async function createMarkdownRender(options?: Options) {
   return (markdown: string) => {
     lines.length = 0
     const html = markdownIt.render(markdown)
-    const css = linesToCSS(lines)
+    const wrapperCss = highlighter.generateWrapperCSS()
+    const css = wrapperCss + linesToCSS(lines)
     return { markdown, html, toc, meta, css }
   }
 
   function highlight(code: string, lang: string) {
     // Trim the extra `/n` at the end
-    const result = highlighter(code.replace(/\n$/, ''), lang as Lang)
+    const result = highlighter.highlight(code.replace(/\n$/, ''), lang as Lang)
     lines.push(...result.lines)
     return result.html
   }
