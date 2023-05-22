@@ -104,17 +104,17 @@ function generateSpanCSS(span: HightlightSpan) {
   if(!span.style) {
     return { className: '', css: ''}
   }
-  const styles = Object.values(span.style)
-  const hasColor = styles.some(style => style.color)
-  const hasBold = styles.some(isBold)
-  const hasItalic = styles.some(isItalic)
-  const hasUnderline = styles.some(isUnderline)
+  const defaultStyle = span.style.default
+  const hasColor = !!defaultStyle.color
+  const hasBold = isBold(defaultStyle)
+  const hasItalic = isItalic(defaultStyle)
+  const hasUnderline = isUnderline(defaultStyle)
   const themeStyles = Object.entries(span.style).map(([themeAlias, style]) => {
     const css = [
-      ['color', style.color || (hasColor ? 'inherit' : '')], 
-      ['font-weight', isBold(style) ? 'bold' : hasBold ? 'inherit' : '' ], 
-      ['font-style', isItalic(style) ? 'italic' : hasItalic ? 'inherit' : '' ], 
-      ['text-decoration', isUnderline(style) ? 'bold' : hasUnderline ? 'inherit' : '' ],
+      ['color', style.color || (hasColor ? 'unset' : '')], 
+      ['font-weight', isBold(style) ? 'bold' : hasBold ? 'unset' : '' ], 
+      ['font-style', isItalic(style) ? 'italic' : hasItalic ? 'unset' : '' ], 
+      ['text-decoration', isUnderline(style) ? 'bold' : hasUnderline ? 'unset' : '' ],
     ]
       .filter(kv => kv[1])
       .map(kv => kv.join(':') + ';')
