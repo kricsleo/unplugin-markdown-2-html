@@ -1,6 +1,6 @@
 import { VSCodeTheme } from '../types'
 import JSZip from 'jszip'
-import fetch from 'node-fetch'
+import {ofetch} from 'ofetch'
 // @ts-expect-error no types
 import resolvePath from 'resolve-pathname'
 import json5 from 'json5'
@@ -20,12 +20,8 @@ export async function downloadVSCodeTheme(remoteVSCodeTheme: VSCodeTheme) {
     `/_apis/public/gallery/publisher/${publisher}` +
     `/extension/${extId}/latest` +
     `/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage`
-  const res = await fetch(themeLink)
-  if(!res.ok) {
-    throw new Error(`Download \`${extensionId}\` failed: ${res.statusText}`)
-  }
-  const blob = await res.arrayBuffer()
-  const zip = await JSZip.loadAsync(blob)
+  const buffer = await ofetch(themeLink, { responseType: 'arrayBuffer'})
+  const zip = await JSZip.loadAsync(buffer)
   const pkgContent = await zip.file('extension/package.json')!.async('string')
   const pkgJSON: VSCodeThemePkgJSON = JSON.parse(pkgContent);
   const themeConfig = (pkgJSON.contributes.themes || []).find(
