@@ -1,8 +1,8 @@
-import fs from 'fs-extra'
-import stream from 'stream'
-import unzipper from 'unzipper'
-import path from 'path'
 import { VSCodeTheme } from '../types'
+import JSZip from 'jszip'
+import {ofetch} from 'ofetch'
+// @ts-expect-error no types
+import resolvePath from 'resolve-pathname'
 import json5 from 'json5'
 
 /**
@@ -12,32 +12,15 @@ import json5 from 'json5'
  */
 export async function downloadVSCodeTheme(remoteVSCodeTheme: VSCodeTheme) {
   const [publisher, extId, theme] = remoteVSCodeTheme.split('.')
-  const extensionId = publisher + '.' + extId
-  const tmpPath = `./node_modules/.tmp/${extensionId}`
-  const isThemeExisted = await fs.pathExists(tmpPath)
-
-  if(!isThemeExisted) {
-    const themeLink = 
-      `https://${publisher}.gallery.vsassets.io` +
-      `/_apis/public/gallery/publisher/${publisher}` +
-      `/extension/${extId}/latest` +
-      `/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage`
-    const res = await fetch(themeLink)
-    if(!res.ok) {
-      throw new Error(`Download \`${extensionId}\` failed: ${res.statusText}`)
-    }
-    const buffer = Buffer.from(await res.arrayBuffer());
-    const bufferStream = new stream.Readable();
-    bufferStream.push(buffer);
-    bufferStream.push(null);
-    await new Promise((rs, rj) => {
-      bufferStream.pipe(unzipper.Extract({ path: tmpPath }))
-      .on('close', rs)
-      .on('error', rj)
-    })
-  }
-  
-  const pkgJSON: VSCodeThemePkgJSON = await fs.readJson(`${tmpPath}/extension/package.json`)
+  const themeLink = 
+    `https://${publisher}.gallery.vsassets.io` +
+    `/_apis/public/gallery/publisher/${publisher}` +
+    `/extension/${extId}/latest` +
+    `/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage`
+  const buffer = await ofetch(themeLink, { responseType: 'arrayBuffer'})
+  const zip = await JSZip.loadAsync(buffer)
+  const pkgContent = await zip.file('extension/package.json')!.async('string')
+  const pkgJSON: VSCodeThemePkgJSON = JSON.parse(pkgContent);
   const themeConfig = (pkgJSON.contributes.themes || []).find(
     t => t.label.toLowerCase() === theme.toLowerCase()
   )
@@ -47,9 +30,9 @@ export async function downloadVSCodeTheme(remoteVSCodeTheme: VSCodeTheme) {
       .join(' | ')
     throw new Error(`Not found theme \`${theme}\`, but found ${avaliableThemes}`)
   }
-  const themePath = path.resolve(tmpPath, 'extension', themeConfig.path)
-  const content = await fs.readFile(themePath, { encoding: 'utf-8' })
-  const themeJSON = json5.parse(content)
+  const themePath = resolvePath(themeConfig.path, 'extension/')
+  const themeContent = await zip.file(themePath)!.async('string')
+  const themeJSON = json5.parse(themeContent)
   return themeJSON
 }
 
