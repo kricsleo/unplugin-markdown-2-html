@@ -18,9 +18,9 @@ export default defineConfig({
     Unocss(),
     unpluginMarkdown2Html({ 
       highlight: { theme: {
-        default: 'light-plus',
-        dark: 'kricsleo.gentle-clean.Gentle Clean Monokai',
-        news: 'hc_light',
+        // default: 'light-plus',
+        default: 'ddiu8081.moegi-theme.Moegi Space',
+        dark: 'kricsleo.gentle-clean.Gentle Clean Vitesse',
       }}
     })
   ],
