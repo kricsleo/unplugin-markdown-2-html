@@ -31,13 +31,15 @@ onMounted(async () => {
     <div text-center>
       <button text-30px cursor-pointer i-carbon:sun dark:i-carbon:moon @click="toggleDark()" />
     </div>
-    <div v-html="html" />
-    <component is="style" v-html="css" />
 
     <h2>Local</h2>
 
     <div v-html="htmlLocal" />
     <component is="style" v-html="cssLocal" />
+    
+    <!-- <div v-html="html" />
+    <component is="style" v-html="css" /> -->
+
 
     <!-- <div v-html="html2" />
     <component is="style" v-html="css2" /> -->

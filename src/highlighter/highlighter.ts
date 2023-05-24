@@ -1,20 +1,17 @@
-import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES, FontStyle, Lang, Highlighter, ILanguageRegistration } from 'shiki-es'
+import { getHighlighter, Theme, BUNDLED_THEMES, FontStyle, Lang, Highlighter, ILanguageRegistration } from 'shiki-es'
 import { escapeHtml } from 'markdown-it/lib/common/utils';
 import { HighlightTheme, HighlightOptions, HighlightThemeName, HightlightSpan, HightlightSpanThemeStyle, HighlightSingleOptions, HighlightMultiOptions, HighlightMultiTheme } from '../types'
 import { downloadVSCodeTheme } from './theme'
 
-const wrapperClassName = 'sk-199507'
-const defaultLangs = 'diff,json,js,ts,css,shell,html,md,yaml,vue'.split(',') as Lang[]
-const defaultTheme: HighlightMultiTheme = { default: 'github-light', dark: 'github-dark' }
+const wrapperClassName = 'shiki'
+const defaultLangs = 'diff,json,js,ts,css,shell,html,yaml'.split(',') as Lang[]
+const defaultTheme: HighlightMultiTheme = { default: 'material-default', dark: 'material-palenight' }
 
 export async function createHighlighter(options?: HighlightOptions) {
   const langs = options?.langs || defaultLangs
   const optThemes = resolveTheme(options?.theme)
-  const highlighter = await getHighlighter({})
-  await Promise.all([
-    loadLanguage(...langs),
-    loadTheme(optThemes)
-  ])
+  const highlighter = await getHighlighter({ langs, themes: []})
+  await loadTheme(optThemes)
   return { 
     highlight, 
     highlightAsync,
