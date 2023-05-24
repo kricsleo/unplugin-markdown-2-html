@@ -7,8 +7,8 @@ import json5 from 'json5'
 
 /**
  * Download theme from VS Code market.
- * [publisher].[extension].[ThmeName]
- * .Eg. 'kricsleo.gentle-clen.Gentle Clean Vitesse'
+ * `<Identifier>.<ThemeName>`
+ * .Eg. `kricsleo.gentle-clen.Gentle Clean Vitesse`
  */
 export async function downloadVSCodeTheme(remoteVSCodeTheme: VSCodeTheme) {
   const [publisher, extId, theme] = remoteVSCodeTheme.split('.')

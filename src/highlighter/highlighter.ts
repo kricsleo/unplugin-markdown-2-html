@@ -1,4 +1,4 @@
-import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES, FontStyle, Lang, Highlighter } from 'shiki-es'
+import { getHighlighter, Theme, BUNDLED_THEMES, BUNDLED_LANGUAGES, FontStyle, Lang, Highlighter, ILanguageRegistration } from 'shiki-es'
 import { escapeHtml } from 'markdown-it/lib/common/utils';
 import { HighlighTheme, HighlightOptions, HighlightThemeName, HightlightSpan, HightlightSpanThemeStyle, VSCodeTheme } from '../types'
 import { downloadVSCodeTheme } from './theme'
@@ -8,34 +8,109 @@ const wrapperClassName = 'sk-199507'
 export async function createHighlighter(options?: HighlightOptions) {
   const langs = options?.langs || BUNDLED_LANGUAGES
   const themes = resolveTheme(options?.theme)
-  
-  const builtinThemes = Object.values(themes).filter(theme => isBuiltinTheme(theme as HighlightThemeName)) as Theme[]
-  const vscodeThemes = Object.values(themes).filter(theme => !isBuiltinTheme(theme as HighlightThemeName)) as VSCodeTheme[]
-  const highlighter = await getHighlighter({ langs, themes: builtinThemes })
-  if(vscodeThemes.length) {
-    await Promise.all(vscodeThemes.map(async theme => {
-      const themeJSON = await downloadVSCodeTheme(theme)
-      themeJSON.name = theme
-      await highlighter.loadTheme(themeJSON)
-    }))
+  const highlighter = await getHighlighter({})
+  await Promise.all([
+    loadLanguage(...langs),
+    loadTheme(themes)
+  ])
+  return { 
+    highlight, 
+    highlightAsync,
+    highlightToMultiThemes,
+    highlightToMultiThemesAsync,
+    highlightToLines,
+    highlightToLinesAsync,
+    loadLanguage,
+    loadTheme,
+    generateWrapperCSS,
   }
-  return { highlight, generateWrapperCSS }
 
-  function highlight(code: string, lang?: string) {
+  /**
+   * Highlight code to html.
+   * Use preloaded language and theme.
+   */
+  function highlight(code: string, lang?: Lang, theme?: HighlightThemeName) {
+    const isLoadedLang = highlighter.getLoadedLanguages().includes(lang as Lang)
+    if(!lang || !isLoadedLang) {
+      !isLoadedLang && console.warn(`No language registration for \`lang\`, skipping highlight.`)
+      return `<pre class="${wrapperClassName}"><code>${code}</code></pre>`
+    }
+    return highlighter.codeToHtml(code, { lang, theme: theme as Theme })
+  }
+
+  /**
+   * Hightlight code to html.
+   * Dynamic on-demand loading of language and theme.
+   */
+  async function highlightAsync(code: string, lang?: Lang, theme?: HighlightThemeName) {
+    await Promise.all([
+      lang && loadLanguage(lang),
+      theme && loadTheme(theme)
+    ])
+    const html = highlight(code, lang, theme)
+    return html
+  }
+
+  /**
+   * Highlight code to html with multile themes.
+   * Additional styles specified by className will be generated.
+   */
+  function highlightToMultiThemes(code: string, lang?: string) {
     const lines = highlightToLines(code, lang)
     const css = linesToCSS(lines)
     const html = linesToHtml(lines)
     return { html, css, lines }
   }
 
+  /**
+   * Highlight code to html with multile themes.
+   * Additional styles specified by className will be generated.
+   */
+  async function highlightToMultiThemesAsync(code: string, lang?: string, theme?: HighlighTheme) {
+    await Promise.all([
+      lang && loadLanguage(lang as Lang),
+      theme && loadTheme(theme)
+    ])
+    return highlightToMultiThemes(code, lang)
+  }
+
+  /**
+   * Load a language.
+   */
+  async function loadLanguage(...langs: (Lang | ILanguageRegistration)[]) {
+    const newLangs = langs.filter(lang => {
+      const langName = typeof lang === 'string' ? lang : lang.id as Lang
+      return !highlighter.getLoadedLanguages().includes(langName)
+    })
+    await Promise.all(newLangs.map(lang => highlighter.loadLanguage(lang)))
+  }
+
+  /**
+   * Load a theme.
+   * Support for shiki built-in themes and any remote VSCode theme marketplace themes.
+   * VSCode themes are specified via `<Identifier>.<ThemeName>`
+   */
+  async function loadTheme(theme: HighlighTheme) {
+    const themes = resolveTheme(theme)
+    const newThemes = Object.values(themes).filter(theme => !highlighter.getLoadedThemes().includes(theme as Theme))
+    await Promise.all(newThemes.map(async theme => {
+      if(isBuiltinTheme(theme)) {
+        await highlighter.loadTheme(theme)
+      } else {
+        const themeJSON = await downloadVSCodeTheme(theme)
+        themeJSON.name = theme
+        await highlighter.loadTheme(themeJSON)
+      }
+    }))
+  }
+
   function highlightToLines(code: string, lang?: string): HightlightSpan[][] {
-    if(!lang) {
+    const isLoadedLang = highlighter.getLoadedLanguages().includes(lang as Lang)
+    if(!lang || !isLoadedLang) {
+      !isLoadedLang && console.warn(`No language registration for \`lang\`, skipping highlight.`)
       return highlightToPlainLines(code)
     }
-    if(!highlighter.getLoadedLanguages().includes(lang as Lang)) {
-      console.warn(`No language registration for \`lang\`, skipping highlight.`)
-      return highlightToPlainLines(code)
-    }
+
     const themeLines = Object.entries(themes).map(([themeAlias, theme]) => {
       const lines: HightlightSpan[][] = highlighter.codeToThemedTokens(
         code, 
@@ -67,6 +142,14 @@ export async function createHighlighter(options?: HighlightOptions) {
       }, themeLines[0].lines[line])
     }
     return mergedLines
+  }
+
+  async function highlightToLinesAsync(code: string, lang?: string, theme?: HighlighTheme): Promise<HightlightSpan[][]> {
+    await Promise.all([
+      lang && loadLanguage(lang as Lang),
+      theme && loadTheme(theme)
+    ])
+    return highlightToLines(code, lang)
   }
 
   function generateWrapperCSS() {
@@ -200,7 +283,7 @@ function resolveTheme(theme?: HighlighTheme) {
     ? typeof theme === 'string'
       ? {default: theme}
       : theme
-    : { default: 'vitesse-dark' }
+    : { default: 'vitesse-dark' as HighlightThemeName }
   return themes
 }
 
