@@ -56,14 +56,14 @@ export async function createMarkdownRender(options?: Options) {
   return (markdown: string) => {
     lines.length = 0
     const html = markdownIt.render(markdown)
-    const wrapperCss = highlighter.generateWrapperCSS()
+    const wrapperCss = highlighter.generateMultiThemesWrapperCSS(options?.highlight?.theme)
     const css = wrapperCss + linesToCSS(lines)
     return { markdown, html, toc, meta, css }
   }
 
   function highlight(code: string, lang: string) {
     // Trim the extra `/n` at the end
-    const result = highlighter.highlight(code.replace(/\n$/, ''), lang as Lang)
+    const result = highlighter.highlightToMultiThemes(code.replace(/\n$/, ''), {lang: lang as Lang})
     lines.push(...result.lines)
     return result.html
   }

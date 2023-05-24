@@ -24,13 +24,23 @@ export interface Markdown {
 
 export interface HighlightOptions {
   langs?: (Lang | ILanguageRegistration)[]
-  theme?: HighlighTheme
+  theme?: HighlightTheme
+}
+
+export interface HighlightMultiOptions {
+  lang?: (Lang | ILanguageRegistration)
+  theme?: HighlightTheme
+}
+
+export interface HighlightSingleOptions {
+  lang?: (Lang | ILanguageRegistration)
+  theme?: HighlightThemeName
 }
 
 export type VSCodeExtensionId = `${string}.${string}`
 export type VSCodeTheme = `${VSCodeExtensionId}.${string}`
 export type HighlightThemeName = Theme | VSCodeTheme
-export type HighlighTheme = HighlightThemeName | {
+export type HighlightTheme = HighlightThemeName | {
   default: HighlightThemeName;
   [themeAlias: string]: HighlightThemeName;
 }
