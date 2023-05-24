@@ -40,10 +40,11 @@ export interface HighlightSingleOptions {
 export type VSCodeExtensionId = `${string}.${string}`
 export type VSCodeTheme = `${VSCodeExtensionId}.${string}`
 export type HighlightThemeName = Theme | VSCodeTheme
-export type HighlightTheme = HighlightThemeName | {
+export type HighlightMultiTheme = {
   default: HighlightThemeName;
   [themeAlias: string]: HighlightThemeName;
 }
+export type HighlightTheme = HighlightThemeName | HighlightMultiTheme
 
 export type HightlightSpanThemeStyle = Pick<IThemedToken, 'color' | 'fontStyle'>
 export interface HightlightSpan {

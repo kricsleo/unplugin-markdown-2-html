@@ -13,11 +13,11 @@ const cssLocal = ref('')
 onMounted(async () => {
   const render = await createMarkdownRender({
     highlight: {
-      theme: {
-        default: 'ddiu8081.moegi-theme.Moegi Black',
-        dark: 'kricsleo.gentle-clean.Gentle Clean Vitesse',
-      },
-      langs: ['ts', 'diff', 'html']
+      // theme: {
+      //   default: 'ddiu8081.moegi-theme.Moegi Black',
+      //   dark: 'kricsleo.gentle-clean.Gentle Clean Vitesse',
+      // },
+      // langs: ['ts', 'diff', 'html']
     }
   })
   const result = render(markdown)

@@ -56,7 +56,7 @@ export async function createMarkdownRender(options?: Options) {
   return (markdown: string) => {
     lines.length = 0
     const html = markdownIt.render(markdown)
-    const wrapperCss = highlighter.generateMultiThemesWrapperCSS(options?.highlight?.theme)
+    const wrapperCss = highlighter.generateMultiThemesWrapperCSS()
     const css = wrapperCss + linesToCSS(lines)
     return { markdown, html, toc, meta, css }
   }
