@@ -10,7 +10,10 @@ const defaultTheme: HighlightMultiTheme = { default: 'material-default', dark: '
 export async function createHighlighter(options?: HighlightOptions) {
   const langs = options?.langs || defaultLangs
   const optThemes = resolveTheme(options?.theme)
-  const highlighter = await getHighlighter({ langs, themes: []})
+  const builtinThemes = Object.values(optThemes).filter(theme => isBuiltinTheme(theme))
+  // If no `themes`, the `nord` theme will be loaded.
+  // https://github.com/shikijs/shiki/issues/473
+  const highlighter = await getHighlighter({ langs, themes: builtinThemes})
   await loadTheme(optThemes)
   return { 
     highlight, 
@@ -84,12 +87,7 @@ export async function createHighlighter(options?: HighlightOptions) {
    * Load a language.
    */
   async function loadLanguage(...langs: (Lang | ILanguageRegistration | undefined)[]) {
-    const newLangs = langs.filter(lang => {
-      const langName = typeof lang === 'string' || !lang
-        ? lang 
-        : lang.id as Lang
-      return langName && !highlighter.getLoadedLanguages().includes(langName)
-    }) as (Lang | ILanguageRegistration)[]
+    const newLangs = langs.filter(Boolean) as (Lang | ILanguageRegistration)[]
     await Promise.all(newLangs.map(lang => highlighter.loadLanguage(lang)))
   }
 
@@ -201,7 +199,7 @@ function linesToHtml(lines: HightlightSpan[][]) {
     '<span class="line">' +
     line.map(span => {
       const { className } = generateSpanCSS(span)
-      return `<span class="${className}">${escapeHtml(span.content)}</span>`
+      return `<span${className ? ' class="' + className + '"' : ''}>${escapeHtml(span.content)}</span>`
     }).join('') +
     '\n</span>'
   ).join('')

@@ -16,13 +16,7 @@ export default defineConfig({
     Vue(),
     // https://github.com/antfu/unocss => unocss.config.ts
     Unocss(),
-    unpluginMarkdown2Html({ 
-      highlight: { theme: {
-        // default: 'light-plus',
-        default: 'ddiu8081.moegi-theme.Moegi Space',
-        dark: 'kricsleo.gentle-clean.Gentle Clean Vitesse',
-      }}
-    })
+    unpluginMarkdown2Html()
   ],
 
   // https://github.com/vitest-dev/vitest

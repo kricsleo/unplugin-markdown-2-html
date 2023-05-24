@@ -13,11 +13,11 @@ const cssLocal = ref('')
 onMounted(async () => {
   const render = await createMarkdownRender({
     highlight: {
-      // theme: {
-      //   default: 'ddiu8081.moegi-theme.Moegi Black',
-      //   dark: 'kricsleo.gentle-clean.Gentle Clean Vitesse',
-      // },
-      // langs: ['ts', 'diff', 'html']
+      theme: {
+        default: 'vitesse-light',
+        dark: 'kricsleo.gentle-clean.Gentle Clean Vitesse',
+      },
+      langs: ['ts', 'diff']
     }
   })
   const result = render(markdown)
@@ -31,8 +31,6 @@ onMounted(async () => {
     <div text-center>
       <button text-30px cursor-pointer i-carbon:sun dark:i-carbon:moon @click="toggleDark()" />
     </div>
-
-    <h2>Local</h2>
 
     <div v-html="htmlLocal" />
     <component is="style" v-html="cssLocal" />
