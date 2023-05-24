@@ -104,14 +104,14 @@ export async function createHighlighter(options?: HighlightOptions) {
     }))
   }
 
-  function highlightToLines(code: string, lang?: string): HightlightSpan[][] {
+  function highlightToLines(code: string, lang?: string, theme?: HighlighTheme): HightlightSpan[][] {
     const isLoadedLang = highlighter.getLoadedLanguages().includes(lang as Lang)
     if(!lang || !isLoadedLang) {
       !isLoadedLang && console.warn(`No language registration for \`lang\`, skipping highlight.`)
       return highlightToPlainLines(code)
     }
 
-    const themeLines = Object.entries(themes).map(([themeAlias, theme]) => {
+    const themeLines = Object.entries(resolveTheme(theme)).map(([themeAlias, theme]) => {
       const lines: HightlightSpan[][] = highlighter.codeToThemedTokens(
         code, 
         lang,
@@ -152,7 +152,8 @@ export async function createHighlighter(options?: HighlightOptions) {
     return highlightToLines(code, lang)
   }
 
-  function generateWrapperCSS() {
+  function generateWrapperCSS(theme: HighlighTheme) {
+    const themes = resolveTheme(theme)
     const defaultThemeBg = highlighter.getBackgroundColor(themes.default)
     const wrapperCss = Object.entries(themes).map(([themeAlias, theme]) => {
       const bg = highlighter.getBackgroundColor(theme)
