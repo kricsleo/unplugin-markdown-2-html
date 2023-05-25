@@ -24,6 +24,7 @@ importers:
       markdown-it-anchor: ^8.6.7
       markdown-it-attrs: ^4.1.6
       markdown-it-meta-yaml: ^0.0.4
+      markdown-it-task-lists: ^2.1.1
       markdown-it-toc-done-right: ^4.2.0
       node-fetch: ^3.3.1
       nodemon: ^2.0.20
@@ -49,6 +50,7 @@ importers:
       markdown-it-anchor: 8.6.7_ea7kj7wzjkld5jo2noyjqxi764
       markdown-it-attrs: 4.1.6_markdown-it@13.0.1
       markdown-it-meta-yaml: 0.0.4
+      markdown-it-task-lists: 2.1.1
       markdown-it-toc-done-right: 4.2.0
       node-fetch: 3.3.1
       prismjs: 1.29.0
@@ -3727,6 +3729,10 @@ packages:
     resolution: {integrity: sha512-faAygAufqa5EnrauKVs4tnF/tXIKQVHNZ3HRLVTJa33TrD0JIPDsjrJhMoGlzTALZWuP5bsjkX69mSxTQSyzuw==}
     dependencies:
       js-yaml: 4.1.0
+    dev: false
+
+  /markdown-it-task-lists/2.1.1:
+    resolution: {integrity: sha512-TxFAc76Jnhb2OUu+n3yz9RMu4CwGfaT788br6HhEDlvWfdeJcLUsxk1Hgw2yJio0OXsxv7pyIPmvECY7bMbluA==}
     dev: false
 
   /markdown-it-toc-done-right/4.2.0:

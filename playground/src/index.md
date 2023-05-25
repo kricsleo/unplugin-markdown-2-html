@@ -3,6 +3,9 @@ title: Hello Makrdown
 likes: 100
 ---
 
+- [ ] todo
+- [x] done
+
 ```ts
 import Vue from 'vue'
 const myGreeter = new Greeter("hello, world");

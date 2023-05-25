@@ -3,6 +3,8 @@ import markdownItAttrs from 'markdown-it-attrs'
 import markdownItAnchor from 'markdown-it-anchor'
 import markdownItToc, { TocOptions } from 'markdown-it-toc-done-right'
 import markdownItMetaYaml, { Options as MarkdownItMetaYamlOptions} from 'markdown-it-meta-yaml'
+// @ts-expect-error missing types
+import markdownItTodoList from 'markdown-it-task-lists'
 import { Lang } from 'shiki-es'
 import { HightlightSpan, Options } from './types'
 import { createHighlighter, linesToCSS } from './highlighter/highlighter'
@@ -36,6 +38,7 @@ export async function createMarkdownRender(options?: Options) {
   })
   markdownIt
     .use(markdownItAttrs)
+    .use(markdownItTodoList)
     .use(markdownItToc, {
       listType: 'ul',
       callback: tocStr => toc = tocStr,
