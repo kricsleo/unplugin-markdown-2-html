@@ -7,4 +7,6 @@ declare module "*.md" {
   const toc: string
   /** YAML-formatted metadata for markdown */
   const meta: Record<string, unknown>
+  /** Generated code highlighting style content */
+  const css: string
 }
