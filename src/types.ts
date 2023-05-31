@@ -1,7 +1,7 @@
 import { Options as MarkdownItOptions } from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
 import { TocOptions } from 'markdown-it-toc-done-right'
-import { Theme } from 'shiki'
+import { IThemedToken, Theme, ILanguageRegistration, Lang } from 'shiki-es'
 
 export interface Options {
   /** @see https://github.com/markdown-it/markdown-it#init-with-presets-and-options */
@@ -19,17 +19,36 @@ export interface Markdown {
   html: string
   toc: string
   meta: Record<string, unknown>
+  css: string
 }
 
 export interface HighlightOptions {
-  shiki?: { theme: ShikiTheme }
-  // roadmap for prismjs v2: https://github.com/PrismJS/prism/discussions/3531
-  prismjs?: boolean
-  highlightjs?: boolean
+  langs?: (Lang | ILanguageRegistration)[]
+  theme?: HighlightTheme
 }
 
-export type Highlighter = (code: string, language?: string) => string
+export interface HighlightMultiOptions {
+  lang?: (Lang | ILanguageRegistration)
+  theme?: HighlightTheme
+}
+
+export interface HighlightSingleOptions {
+  lang?: (Lang | ILanguageRegistration)
+  theme?: HighlightThemeName
+}
 
 export type VSCodeExtensionId = `${string}.${string}`
-export type RemoteVSCodeThemeId = `${VSCodeExtensionId}.${string}`
-export type ShikiTheme = Theme | RemoteVSCodeThemeId
+export type VSCodeTheme = `${VSCodeExtensionId}.${string}`
+export type HighlightThemeName = Theme | VSCodeTheme
+export type HighlightMultiTheme = {
+  default: HighlightThemeName;
+  [themeAlias: string]: HighlightThemeName;
+}
+export type HighlightTheme = HighlightThemeName | HighlightMultiTheme
+
+export type HightlightSpanThemeStyle = Pick<IThemedToken, 'color' | 'fontStyle'>
+export interface HightlightSpan {
+  content: string
+  // { [themeName]: themeStyle }
+  style?: Record<string, HightlightSpanThemeStyle>
+}

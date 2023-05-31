@@ -16,9 +16,7 @@ export default defineConfig({
     Vue(),
     // https://github.com/antfu/unocss => unocss.config.ts
     Unocss(),
-    unpluginMarkdown2Html({ 
-      highlight: { shiki: { theme: 'kricsleo.gentle-clean.Gentle Clean Monokai' }}
-    })
+    unpluginMarkdown2Html()
   ],
 
   // https://github.com/vitest-dev/vitest
