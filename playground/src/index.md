@@ -4,6 +4,7 @@ likes: 100
 ---
 
 ```ts
+import Vue from 'vue'
 const myGreeter = new Greeter("hello, world");
 myGreeter.greeting = "howdy";
 myGreeter.showGreeting();
@@ -13,6 +14,8 @@ class SpecialGreeter extends Greeter {
         super("Very special greetings");
     }
 }
+
+export type UseFetchOptions = { key?: string }
 ```
 
 ```html

@@ -14,7 +14,7 @@ onMounted(async () => {
   const render = await createMarkdownRender({
     highlight: {
       theme: {
-        default: 'vitesse-light',
+        default: 'material-palenight',
         dark: 'kricsleo.gentle-clean.Gentle Clean Vitesse',
       },
       langs: ['ts', 'diff']
