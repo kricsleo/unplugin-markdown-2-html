@@ -16,7 +16,11 @@ export default defineConfig({
     Vue(),
     // https://github.com/antfu/unocss => unocss.config.ts
     Unocss(),
-    unpluginMarkdown2Html()
+    unpluginMarkdown2Html({
+      highlight: {
+        theme: 'kricsleo.gentle-clean.Gentle Clean Vitesse'
+      }
+    })
   ],
 
   // https://github.com/vitest-dev/vitest

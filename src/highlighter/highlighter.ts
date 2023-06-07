@@ -1,5 +1,5 @@
 import { getHighlighter, Theme, BUNDLED_THEMES, FontStyle, Lang, Highlighter, ILanguageRegistration } from 'shiki-es'
-import { escapeHtml } from 'markdown-it/lib/common/utils';
+import { escapeHtml } from 'markdown-it/lib/common/utils.js';
 import { HighlightTheme, HighlightOptions, HighlightThemeName, HightlightSpan, HightlightSpanThemeStyle, HighlightSingleOptions, HighlightMultiOptions, HighlightMultiTheme } from '../types'
 import { downloadVSCodeTheme } from './theme'
 
