@@ -21,12 +21,10 @@
 </h3>
 
 <p align="center">
-  <a href="https://stackblitz.com/edit/vitejs-vite-rce25h">
+  <a href="https://stackblitz.com/edit/vitejs-vite-rce25h?file=src%2Findex.md" target="_blank">
     <img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" />
   </a>
 </p>
-
-<br >
 
 ## Features
 
