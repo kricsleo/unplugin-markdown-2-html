@@ -10,6 +10,7 @@ export interface Options {
   toc?: Partial<TocOptions>
   /** @see https://github.com/valeriangalliat/markdown-it-anchor#usage */
   anchor?: markdownItAnchor.AnchorOptions
+  /** Code highlight options */
   highlight?: HighlightOptions
 }
 
