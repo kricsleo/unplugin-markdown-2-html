@@ -20,6 +20,14 @@
  ✨ Render markdown into HTML at build time.
 </h3>
 
+<p align="center">
+  <a href="https://stackblitz.com/edit/vitejs-vite-rce25h">
+    <img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" />
+  </a>
+</p>
+
+<br >
+
 ## Features
 
 - 🪜 Support Vite, Rollup, Webpack, esbuild, and more - powered by [`unplugin`](https://github.com/unjs/unplugin)
